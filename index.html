@@ -20196,6 +20196,7 @@ let pbEditingId = null;
 let me = { email: null, role: null };
 let loadedVersion = -1, cloudDirty = false, cloudSaving = false, cloudErr = null, newerAvailable = false, bankEmpty = false;
 let bankSaveTimer = null, pollTimer = null, authMsg = "", dashData = null;
+let taxRate = 18;
 let drafts = [], currentDraftId = null, lastDraftSnapshot = "", showDraftsPanel = false;
 let svcSearch = "";
 let pasteCtx = null;
@@ -21062,7 +21063,7 @@ function tabStatus(key) {
     case "client":   return client.name ? client.name : "Not set";
     case "services": return editedSections.length ? editedSections.length + " selected" : "None selected";
     case "content":  { const n = editedSections.reduce((a,g)=>a+g.sections.length,0); return n ? n + " sections" : "—"; }
-    case "pricing":  { if (!pricingItems.length) return "—"; const miss = pricingItems.filter(p=>!p.amount||!p.amount.trim()).length; if (miss) return "⚠ " + miss + " amount" + (miss>1?"s":"") + " missing"; const gs = pricingTotalGroups(); return gs ? gs.map(g=>fmtINR(Math.round(g.sum*1.18))+(g.unit||"")).join(" + ") + " incl. GST" : "filled"; }
+    case "pricing":  { if (!pricingItems.length) return "—"; const miss = pricingItems.filter(p=>!p.amount||!p.amount.trim()).length; if (miss) return "⚠ " + miss + " amount" + (miss>1?"s":"") + " missing"; const gs = pricingTotalGroups(); return gs ? gs.map(g=>fmtMoney(Math.round(g.sum*(1+taxRate/100)), g.cur)+(g.unit||"")).join(" + ") + (taxRate>0?" incl. GST":"") : "filled"; }
     case "terms":    return editedClauses.length + " T&C · " + (editedPayment.length ? "payment ✓" : "⚠ no payment");
     case "review":   { const r = readinessList(); const okN = r.filter(c=>c.ok).length; return okN + "/" + r.length + " ready"; }
   }
@@ -21234,6 +21235,7 @@ function panelPricing() {
     h += `</div>`;
   });
   h += `<button onclick="addPricingLine()" style="width:100%;padding:9px;border:1px dashed #bbb;border-radius:8px;background:none;color:#777;font-size:12.5px;font-weight:600;cursor:pointer;margin-bottom:10px">＋ Add pricing line (e.g. one-time setup fee)</button>`;
+  h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:11px;font-weight:600;color:#777">Tax applied to totals</span><select onchange="taxRate=parseInt(this.value);autoSaveDraft();render()" style="padding:6px 10px;border:1px solid #ccc;border-radius:5px;font-size:12px;background:#fff"><option value="18" ${taxRate===18?"selected":""}>GST 18% (India)</option><option value="5" ${taxRate===5?"selected":""}>GST 5%</option><option value="0" ${taxRate===0?"selected":""}>No tax (e.g. international)</option></select></div>`;
   h += `<div id="pricingTotals" style="border:1px solid #eee;border-radius:8px;overflow:hidden">${pricingTotalsHtml()}</div>`;
   h += nextBtn("terms", "Next: Terms & Payment");
   return h;
@@ -21328,10 +21330,15 @@ function renderPaperPreview() {
     for (const p of priced) h += `<tr><td style="border:1px solid #e5e5e5;padding:6px 9px">${esc(p.title)}${p.variation?" — "+esc(p.variation):""}</td><td style="border:1px solid #e5e5e5;padding:6px 9px;text-align:right">${esc(p.amount)}</td></tr>`;
     const tot = pricingTotalGroups();
     if (tot) {
-      for (const grp of tot) { const g = Math.round(grp.sum*0.18); const lbl = tot.length > 1 ? " — " + unitLabel(grp.unit) : "";
-        h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">Subtotal${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtINR(grp.sum)}${grp.unit||""}</td></tr>`;
-        h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">GST (18%)${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtINR(g)}${grp.unit||""}</td></tr>`;
-        h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total incl. GST${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${fmtINR(grp.sum+g)}${grp.unit||""}</td></tr>`;
+      for (const grp of tot) {
+        const lbl = tot.length > 1 ? " — " + (grp.cur === "USD" ? "USD " : "") + unitLabel(grp.unit) : "";
+        if (taxRate > 0) { const g = Math.round(grp.sum * taxRate / 100);
+          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">Subtotal${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtMoney(grp.sum, grp.cur)}${grp.unit||""}</td></tr>`;
+          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">GST (${taxRate}%)${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtMoney(g, grp.cur)}${grp.unit||""}</td></tr>`;
+          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total incl. GST${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${fmtMoney(grp.sum+g, grp.cur)}${grp.unit||""}</td></tr>`;
+        } else {
+          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${fmtMoney(grp.sum, grp.cur)}${grp.unit||""}</td></tr>`;
+        }
       }
     } else {
       h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${priced.length===1?esc(priced[0].amount)+" + GST (18%)":"As above + GST (18%)"}</td></tr>`;
@@ -21641,14 +21648,19 @@ async function handleGenerate() {
     ] });
     if (tot) {
       for (const grp of tot) {
-        const gst = Math.round(grp.sum * 0.18);
-        const lbl = tot.length > 1 ? " — " + unitLabel(grp.unit) : "";
-        pricingRows.push(totRow("Subtotal" + lbl, fmtINR(grp.sum) + (grp.unit||""), false));
-        pricingRows.push(totRow("GST (18%)" + lbl, fmtINR(gst) + (grp.unit||""), false));
-        pricingRows.push(totRow("Total incl. GST" + lbl, fmtINR(grp.sum + gst) + (grp.unit||""), true));
+        const lbl = tot.length > 1 ? " — " + (grp.cur === "USD" ? "USD " : "") + unitLabel(grp.unit) : "";
+        if (taxRate > 0) {
+          const tax = Math.round(grp.sum * taxRate / 100);
+          pricingRows.push(totRow("Subtotal" + lbl, fmtMoney(grp.sum, grp.cur) + (grp.unit||""), false));
+          pricingRows.push(totRow("GST (" + taxRate + "%)" + lbl, fmtMoney(tax, grp.cur) + (grp.unit||""), false));
+          pricingRows.push(totRow("Total incl. GST" + lbl, fmtMoney(grp.sum + tax, grp.cur) + (grp.unit||""), true));
+        } else {
+          pricingRows.push(totRow("Total" + lbl, fmtMoney(grp.sum, grp.cur) + (grp.unit||""), true));
+        }
       }
     } else {
-      const totalAmt = pricedItems.length === 1 ? pricedItems[0].amount + " + GST (18%)" : "As above + GST (18%)";
+      const suffix = taxRate > 0 ? " + GST (" + taxRate + "%)" : "";
+      const totalAmt = pricedItems.length === 1 ? pricedItems[0].amount + suffix : "As above" + suffix;
       pricingRows.push(totRow("Total", totalAmt, true));
     }
     contentChildren.push(new Table({ width: { size: CW, type: WidthType.DXA }, columnWidths: [w1, w2], rows: pricingRows }));
@@ -22063,13 +22075,16 @@ function svcWizardInsert() {
 // ═══════════════════════════════════════════════
 function parseAmount(s) {
   if (!s) return null;
-  const cleaned = String(s).replace(/[,₹]/g, "").replace(/rs\.?/i, "");
-  const m = cleaned.match(/(\d{4,9})(?:\s*\/\s*(month|video|day|mo))?/i);
+  const raw = String(s);
+  const cur = raw.includes("$") ? "USD" : "INR";
+  const cleaned = raw.replace(/[,₹$]/g, "").replace(/rs\.?/i, "").replace(/usd/i, "");
+  const m = cleaned.match(/(\d{2,9})(?:\s*\/\s*(month|video|day|mo))?/i);
   if (!m) return null;
   const u = m[2] ? m[2].toLowerCase() : "";
-  return { v: parseInt(m[1]), unit: u ? " /" + (u === "mo" ? "month" : u) : "" };
+  return { v: parseInt(m[1]), unit: u ? " /" + (u === "mo" ? "month" : u) : "", cur };
 }
-function fmtINR(n) { return "Rs " + n.toLocaleString("en-IN"); }
+function fmtMoney(n, cur) { return cur === "USD" ? "$" + n.toLocaleString("en-US") : "Rs " + n.toLocaleString("en-IN"); }
+function fmtINR(n) { return fmtMoney(n, "INR"); }
 function pricingTotal() {
   const filled = pricingItems.filter(p => p.amount && p.amount.trim());
   if (!filled.length) return null;
@@ -22097,9 +22112,10 @@ function pricingTotalGroups() {
   for (const p of filled) {
     const a = parseAmount(p.amount);
     if (!a) return null; // something unparseable — no auto totals
-    groups[a.unit] = (groups[a.unit] || 0) + a.v;
+    const k = a.cur + "|" + a.unit;
+    groups[k] = (groups[k] || 0) + a.v;
   }
-  return Object.entries(groups).map(([unit, sum]) => ({ unit, sum }));
+  return Object.entries(groups).map(([k, sum]) => { const [cur, unit] = k.split("|"); return { cur, unit, sum }; });
 }
 function addPricingLine() {
   pricingItems.push({ svcId: null, title: "", amount: "", variation: "", range: "", variations: [] });
@@ -22118,14 +22134,18 @@ function pricingTotalsHtml() {
   let h = "";
   if (groups) {
     for (const g of groups) {
-      const gst = Math.round(g.sum * 0.18);
-      const lbl = groups.length > 1 ? " — " + unitLabel(g.unit) : "";
-      h += `<div style="display:grid;grid-template-columns:1fr auto;padding:7px 14px;border-top:1px solid #eee;background:#fafafa"><span style="font-size:12.5px;color:#777">Subtotal${lbl}</span><span style="font-size:12.5px;font-weight:600">${fmtINR(g.sum)}${g.unit||""}</span></div>`;
-      h += `<div style="display:grid;grid-template-columns:1fr auto;padding:7px 14px;border-top:1px solid #eee;background:#fafafa"><span style="font-size:12.5px;color:#777">GST (18%)${lbl}</span><span style="font-size:12.5px;font-weight:600">${fmtINR(gst)}${g.unit||""}</span></div>`;
-      h += `<div style="display:grid;grid-template-columns:1fr auto;padding:9px 14px;border-top:2px solid #ddd;background:#f5f5f5"><span style="font-size:13.5px;font-weight:700">Total incl. GST${lbl}</span><span style="font-size:13.5px;font-weight:700;color:#B12418">${fmtINR(g.sum + gst)}${g.unit||""}</span></div>`;
+      const lbl = groups.length > 1 ? " — " + (g.cur === "USD" ? "USD " : "") + unitLabel(g.unit) : "";
+      if (taxRate > 0) {
+        const tax = Math.round(g.sum * taxRate / 100);
+        h += `<div style="display:grid;grid-template-columns:1fr auto;padding:7px 14px;border-top:1px solid #eee;background:#fafafa"><span style="font-size:12.5px;color:#777">Subtotal${lbl}</span><span style="font-size:12.5px;font-weight:600">${fmtMoney(g.sum, g.cur)}${g.unit||""}</span></div>`;
+        h += `<div style="display:grid;grid-template-columns:1fr auto;padding:7px 14px;border-top:1px solid #eee;background:#fafafa"><span style="font-size:12.5px;color:#777">GST (${taxRate}%)${lbl}</span><span style="font-size:12.5px;font-weight:600">${fmtMoney(tax, g.cur)}${g.unit||""}</span></div>`;
+        h += `<div style="display:grid;grid-template-columns:1fr auto;padding:9px 14px;border-top:2px solid #ddd;background:#f5f5f5"><span style="font-size:13.5px;font-weight:700">Total incl. GST${lbl}</span><span style="font-size:13.5px;font-weight:700;color:#B12418">${fmtMoney(g.sum + tax, g.cur)}${g.unit||""}</span></div>`;
+      } else {
+        h += `<div style="display:grid;grid-template-columns:1fr auto;padding:9px 14px;border-top:2px solid #ddd;background:#f5f5f5"><span style="font-size:13.5px;font-weight:700">Total${lbl}</span><span style="font-size:13.5px;font-weight:700;color:#B12418">${fmtMoney(g.sum, g.cur)}${g.unit||""}</span></div>`;
+      }
     }
   } else if (missing < pricingItems.length) {
-    h += `<div style="padding:8px 14px;border-top:1px solid #eee;background:#fafafa;font-size:11.5px;color:#999">Totals appear automatically once amounts are in a standard format (e.g. Rs 1,35,000 /month).</div>`;
+    h += `<div style="padding:8px 14px;border-top:1px solid #eee;background:#fafafa;font-size:11.5px;color:#999">Totals appear automatically once amounts are in a standard format (e.g. Rs 1,35,000 /month or $2,500 /month).</div>`;
   }
   if (missing) h += `<div style="padding:7px 14px;border-top:1px solid #eee;background:#fff8e1;font-size:11.5px;color:#7a5800">⚠ ${missing} line${missing>1?"s":""} still missing an amount</div>`;
   return h;
@@ -22146,7 +22166,7 @@ function step3Next() {
 //  DRAFTS & RECENT PROPOSALS
 // ═══════════════════════════════════════════════
 function builderState() {
-  return { pbStep, selectedSvcs, selectedClauses, selectedPayment, editedSections, editedClauses, editedPayment, client, pricingItems };
+  return { pbStep, selectedSvcs, selectedClauses, selectedPayment, editedSections, editedClauses, editedPayment, client, pricingItems, taxRate };
 }
 function saveDraft(status) {
   if (!editedSections.length) { flash("Nothing to save yet — select a service first"); return; }
@@ -22163,7 +22183,7 @@ function saveDraft(status) {
     logEvent("generated", {
       client: client.name || "",
       services: editedSections.map(g => g.svcTitle),
-      total: (pricingTotalGroups() || []).map(g => fmtINR(Math.round(g.sum * 1.18)) + (g.unit || "")).join(" + ") || "n/a"
+      total: (pricingTotalGroups() || []).map(g => fmtMoney(Math.round(g.sum * (1 + taxRate / 100)), g.cur) + (g.unit || "")).join(" + ") || "n/a"
     });
   }
   if (status !== "silent" && status !== "generated") flash("Draft saved");
@@ -22185,6 +22205,7 @@ function loadDraft(id) {
   editedPayment = st.editedPayment || [];
   client = st.client || { name:"", signingAuthority:"", designation:"", address:"", contractDuration:"12 Calendar Months", startDate:"", endDate:"" };
   pricingItems = st.pricingItems || [];
+  taxRate = (typeof st.taxRate === "number") ? st.taxRate : 18;
   currentDraftId = id;
   lastDraftSnapshot = JSON.stringify(builderState());
   showDraftsPanel = false;
@@ -22204,7 +22225,7 @@ function newProposal() {
   }
   pbStep = 1; selectedSvcs = {}; editedSections = []; editedClauses = []; editedPayment = []; pricingItems = [];
   client = { name:"", signingAuthority:"", designation:"", address:"", contractDuration:"12 Calendar Months", startDate:"", endDate:"" };
-  currentDraftId = null; lastDraftSnapshot = ""; pbEditingId = null;
+  currentDraftId = null; lastDraftSnapshot = ""; pbEditingId = null; taxRate = 18;
   initSelections();
   seedDefaultClauses();
   render();
