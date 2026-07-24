@@ -20196,11 +20196,7 @@ let loadedVersion = -1, cloudDirty = false, cloudSaving = false, cloudErr = null
 let bankSaveTimer = null, pollTimer = null, authMsg = "", dashData = null;
 let taxRate = 18;
 let pbSearch = "", pbCat = "All", pbMarket = "IND";
-const DEFAULT_BUNDLES = [
-  { id: "b_launch", name: "Brand launch", icon: "🚀", svcIds: ["logo_identity", "branding_design", "website_dev"] },
-  { id: "b_digital", name: "Full digital retainer", icon: "📈", svcIds: ["smm", "perf", "seo"] },
-  { id: "b_video", name: "Video pack", icon: "🎬", svcIds: ["corporate_film", "photography"] }
-];
+
 let drafts = [], currentDraftId = null, lastDraftSnapshot = "", showDraftsPanel = false;
 let svcSearch = "";
 let pasteCtx = null;
@@ -20536,7 +20532,7 @@ function renderSvcDetail() {
     h += fld("Proposal Heading (shown in the Word doc)", "sectionTitle", "e.g. Strategy, Branding & Design Services");
     h += `<div><label style="font-size:11px;font-weight:600;color:#777;display:block;margin-bottom:3px">Type</label><select onchange="updateService('${svc.id}','type',this.value)" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:5px;font-size:12.5px;box-sizing:border-box"><option value="" ${!svc.type?"selected":""}>—</option><option ${svc.type==="Retainer"?"selected":""}>Retainer</option><option ${svc.type==="Ad Hoc"?"selected":""}>Ad Hoc</option></select></div>`;
     h += fld("Category", "category", "e.g. Branding / Digital / Video / Web");
-    h += fld("Market", "market", "e.g. IND or IND + US");
+    h += fld("Market", "market", "IND = India only · IND + US = both · INTL = international only");
     h += fld("Pricing range", "pricing", "e.g. Rs 75,000 to Rs 1,55,000 /month");
     h += area("Variations", "variations", 3, "one per line");
     h += area("Cost factors", "costFactors", 3, "one per line");
@@ -21160,20 +21156,12 @@ function svcThin(s) {
 function svcSectionCount(s) {
   return (s.sections || []).filter(x => x.content && x.content !== "(To be structured)").length;
 }
-function addBundle(bid) {
-  const bundles = (data.bundles && data.bundles.length) ? data.bundles : DEFAULT_BUNDLES;
-  const b = bundles.find(x => x.id === bid);
-  if (!b) return;
-  let added = 0;
-  for (const sid of b.svcIds) {
-    const svc = data.services.find(x => x.id === sid);
-    if (!svc || svcInProposal(sid)) continue;
-    if (me.role !== "admin" && svcThin(svc)) continue;
-    addSvcToProposal(sid, "1");
-    added++;
-  }
-  autoSaveDraft(); render();
-  flash(added ? b.name + " added — " + added + " service(s)" : "Those services are already in the proposal");
+function marketAllows(sv) {
+  const m = (sv.market || "").toUpperCase();
+  const intl = m.includes("US") || m.includes("INTL") || m.includes("GLOBAL") || m.includes("BOTH") || m === "ALL";
+  const ind = m.includes("IND");
+  if (!ind && !intl) return true; // unspecified — show everywhere
+  return pbMarket === "INTL" ? intl : ind;
 }
 function setMarket(mkt) {
   pbMarket = mkt;
@@ -21181,40 +21169,28 @@ function setMarket(mkt) {
   render();
 }
 function panelServices() {
-  let h = panelHead("Services", "What goes into this proposal?", "Pick a bundle for a head start, or tick services one by one.");
-  // bundles
-  const bundles = ((data.bundles && data.bundles.length) ? data.bundles : DEFAULT_BUNDLES).filter(b => b.svcIds.some(id => data.services.some(x => x.id === id)));
-  if (bundles.length) {
-    h += `<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">`;
-    for (const b of bundles) {
-      const names = b.svcIds.map(id => (data.services.find(x => x.id === id) || {}).title).filter(Boolean);
-      h += `<div onclick="addBundle('${b.id}')" style="flex:1;min-width:150px;border:1px solid #f0d0cc;background:#fffbfa;border-radius:10px;padding:9px 12px;cursor:pointer">`;
-      h += `<div style="font-size:12.5px;font-weight:700;color:#B12418">${b.icon || "✦"} ${esc(b.name)}</div>`;
-      h += `<div style="font-size:10.5px;color:#993c1d;margin-top:2px">${esc(names.join(" + "))}</div>`;
-      h += `<div style="font-size:9.5px;color:#b0a9a7;margin-top:3px">1 click adds ${names.length} services</div></div>`;
-    }
-    h += `</div>`;
-  }
-  // controls
-  const cats = ["All", ...new Set(data.services.map(x => x.category).filter(Boolean))];
-  h += `<div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap">`;
-  h += `<input id="pbSearchBox" value="${esc(pbSearch)}" oninput="pbSearch=this.value;render();setTimeout(()=>{const el=document.getElementById('pbSearchBox');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0)" placeholder="🔍 Search…" style="flex:1;min-width:130px;padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:12px;box-sizing:border-box"/>`;
+  let h = panelHead("Services", "What goes into this proposal?");
+  // 1. market toggle — segregation happens before categorisation
+  h += `<div style="margin-bottom:10px"><span style="border:1px solid #ddd;border-radius:16px;padding:3px 4px;font-size:12px;white-space:nowrap;display:inline-block">`;
+  h += `<button onclick="setMarket('IND')" style="border:none;cursor:pointer;border-radius:13px;padding:5px 16px;background:${pbMarket==="IND"?"#B12418":"transparent"};color:${pbMarket==="IND"?"#fff":"#888"};font-size:12px;font-weight:${pbMarket==="IND"?700:400}">India</button>`;
+  h += `<button onclick="setMarket('INTL')" style="border:none;cursor:pointer;border-radius:13px;padding:5px 16px;background:${pbMarket==="INTL"?"#B12418":"transparent"};color:${pbMarket==="INTL"?"#fff":"#888"};font-size:12px;font-weight:${pbMarket==="INTL"?700:400}">International</button></span></div>`;
+  // 2. category chips (built from services available in this market)
+  const marketSvcs = data.services.filter(sv => marketAllows(sv) && (me.role === "admin" || !svcThin(sv)));
+  const cats = ["All", ...new Set(marketSvcs.map(x => x.category).filter(Boolean))];
+  if (pbCat !== "All" && !cats.includes(pbCat)) pbCat = "All";
+  h += `<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap">`;
   for (const c of cats) {
     const on = pbCat === c;
-    h += `<button onclick="pbCat='${esc(c)}';render()" style="padding:5px 11px;border-radius:13px;font-size:11px;font-weight:${on?700:500};border:none;cursor:pointer;background:${on?"#1a1a1a":"#f0f0f0"};color:${on?"#fff":"#666"}">${esc(c)}</button>`;
+    h += `<button onclick="pbCat='${esc(c)}';render()" style="padding:6px 14px;border-radius:14px;font-size:11.5px;font-weight:${on?700:500};border:none;cursor:pointer;background:${on?"#1a1a1a":"#f0f0f0"};color:${on?"#fff":"#666"}">${esc(c)}</button>`;
   }
-  h += `<span style="border:1px solid #ddd;border-radius:14px;padding:2px 3px;font-size:11px;white-space:nowrap">`;
-  h += `<button onclick="setMarket('IND')" style="border:none;cursor:pointer;border-radius:11px;padding:3px 10px;background:${pbMarket==="IND"?"#B12418":"transparent"};color:${pbMarket==="IND"?"#fff":"#888"};font-size:11px;font-weight:${pbMarket==="IND"?700:400}">India</button>`;
-  h += `<button onclick="setMarket('INTL')" style="border:none;cursor:pointer;border-radius:11px;padding:3px 10px;background:${pbMarket==="INTL"?"#B12418":"transparent"};color:${pbMarket==="INTL"?"#fff":"#888"};font-size:11px;font-weight:${pbMarket==="INTL"?700:400}">International</button></span>`;
   h += `</div>`;
+  // 3. search — last
+  h += `<input id="pbSearchBox" value="${esc(pbSearch)}" oninput="pbSearch=this.value;render();setTimeout(()=>{const el=document.getElementById('pbSearchBox');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0)" placeholder="🔍 Search services…" style="width:100%;padding:8px 11px;border:1px solid #ddd;border-radius:7px;font-size:12.5px;box-sizing:border-box;margin-bottom:12px"/>`;
 
-  // groups
   const q = pbSearch.trim().toLowerCase();
-  const visible = data.services.filter(sv => {
+  const visible = marketSvcs.filter(sv => {
     if (pbCat !== "All" && sv.category !== pbCat) return false;
     if (q && !sv.title.toLowerCase().includes(q)) return false;
-    if (pbMarket === "INTL" && !((sv.market || "").toUpperCase().includes("US"))) return false;
-    if (me.role !== "admin" && svcThin(sv)) return false;
     return true;
   });
   const groups = [];
@@ -21223,7 +21199,7 @@ function panelServices() {
   for (const c of [...new Set(visible.filter(sv => sv.type !== "Retainer").map(sv => sv.category || "Other"))]) {
     groups.push([c + " · Ad hoc", visible.filter(sv => sv.type !== "Retainer" && (sv.category || "Other") === c)]);
   }
-  if (!visible.length) h += `<div style="padding:26px;text-align:center;color:#bbb;font-size:12.5px">No services match — clear the search or filters.</div>`;
+  if (!visible.length) h += `<div style="padding:26px;text-align:center;color:#bbb;font-size:12.5px">No services for this market/filter yet${me.role==="admin"?" — set a service's Market field to INTL or IND + US in the Data Bank to show it under International":""}.</div>`;
 
   for (const [label, list] of groups) {
     h += `<div style="font-size:10px;font-weight:700;color:#B12418;text-transform:uppercase;letter-spacing:0.5px;margin:10px 0 6px">${esc(label)}</div>`;
@@ -21272,7 +21248,6 @@ function panelServices() {
     h += `</div>`;
   }
 
-  // summary bar
   const nSecs = editedSections.reduce((a, g) => a + g.sections.length, 0);
   h += `<div style="border-top:2px solid #1a1a1a;margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">`;
   h += `<span style="font-size:13px;font-weight:700">${editedSections.length} service${editedSections.length===1?"":"s"} selected <span style="font-weight:400;color:#999;font-size:12px">· ${nSecs} sections</span></span>`;
