@@ -19,6 +19,206 @@ textarea{resize:vertical}
 .rte:focus{background:#fffdf7}
 .rte div{min-height:1.2em}
 </style>
+<style id="pb-ui">
+/* ══ PROPOSAL BANK — the shell it shares with the Marketing Calendar ══
+   Tokens are the calendar's own values. The Word document is generated
+   programmatically by the docx library and is not affected by anything
+   in this file. */
+:root{
+  --pb-accent:#D62828; --pb-accent-ink:#fff; --pb-accent-soft:#FDEDED;
+  --pb-danger:#C0392B;
+  --pb-text:#0D0D0D; --pb-muted:#6B6B6B; --pb-subtle:#AAAAAA; --pb-faint:#C6C4BF;
+  --pb-canvas:#F2F2F0; --pb-surface:#FFFFFF; --pb-surface2:#F7F7F5;
+  --pb-div:#E4E4E2; --pb-field-line:#D8D6D2;
+  --pb-r-sm:6px; --pb-r-md:8px; --pb-r-lg:12px;
+  --pb-warn-bg:#fff3e0; --pb-warn-ink:#e65100;
+  --pb-note-bg:#fff8e1; --pb-note-ink:#7a5800;
+  --pb-ok:#2e7d32; --pb-ok-bg:#eaf4ea;
+  --entry:380px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,'DM Sans',sans-serif;color:var(--pb-text);background:var(--pb-canvas)}
+#app{max-width:none;margin:0;padding:0}
+
+/* ── nav ── */
+.pbnav{height:60px;background:#0D0D0D;display:flex;align-items:center;padding:0 20px;gap:16px;position:sticky;top:0;z-index:60}
+.pbnav-brand{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;display:flex;align-items:baseline;gap:2px}
+.pbnav-brand .dot{color:var(--pb-accent);font-size:22px;line-height:1}
+.pbnav-sep{width:1px;height:22px;background:rgba(255,255,255,.16)}
+.pbmode{display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:9px;padding:3px}
+.pbmode button{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.62);padding:6px 13px;border-radius:7px;cursor:pointer;border:none;background:transparent}
+.pbmode button.on{background:#fff;color:#0D0D0D}
+.pbnav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pbsave{font-size:10px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.12);color:#9fd8a8}
+.pbsave.err{color:#ffb4ae}
+.pbnav-btn{height:36px;padding:0 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:rgba(255,255,255,.82);cursor:pointer}
+.pbnav-btn.red{background:var(--pb-accent);border-color:var(--pb-accent);color:#fff}
+
+/* ── layout ── */
+.pbbody{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:calc(100vh - 60px)}
+.pbbody.three{grid-template-columns:250px var(--entry) minmax(0,1fr);transition:grid-template-columns .18s ease}
+.pbside{background:#fff;border-right:1px solid var(--pb-div);padding:14px 12px;display:flex;flex-direction:column;height:calc(100vh - 60px);position:sticky;top:60px}
+.pbside-scroll{flex:1;overflow-y:auto;min-height:0}
+.pbmain{padding:18px 22px 40px;min-width:0}
+
+/* ── side panel bits ── */
+.pbseg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--pb-surface2);border-radius:10px;padding:4px;margin-bottom:14px}
+.pbsg{text-align:center;padding:7px 2px;border-radius:8px;line-height:1.15;cursor:pointer;border:none;background:transparent;width:100%}
+.pbsg b{display:block;font-size:11.5px;font-weight:600;color:var(--pb-muted)}
+.pbsg i{display:block;font-style:normal;font-size:15px;font-weight:700;color:var(--pb-text);margin-top:2px}
+.pbsg.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.09)}
+.pbsg.on b{color:var(--pb-text);font-weight:700} .pbsg.on i{color:var(--pb-accent)}
+.pblbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pb-subtle);margin-bottom:7px}
+.pbpills{display:flex;gap:4px;flex-wrap:wrap}
+.pbpill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:#fff;border:1px solid var(--pb-div);color:var(--pb-muted);cursor:pointer}
+.pbpill.on{background:var(--pb-text);color:#fff;border-color:var(--pb-text)}
+.pbpill.all{border-style:dashed} .pbpill.all i{font-style:normal;opacity:.55}
+.pbrow{min-height:32px;display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:8px;font-size:12.5px;color:var(--pb-muted);cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.pbrow:hover{background:var(--pb-surface2)}
+.pbrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbrow.on,.pbrow.on:hover{background:var(--pb-text);color:#fff;font-weight:600}
+.pbtag{font-size:8.5px;font-weight:800;width:15px;height:15px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex:none}
+.pbtag.r{background:var(--pb-note-bg);color:var(--pb-note-ink)}
+.pbtag.a{background:var(--pb-warn-bg);color:var(--pb-warn-ink)}
+.pbrow.on .pbtag{background:rgba(255,255,255,.22);color:#fff}
+.pbacct{margin-top:auto;padding-top:10px;border-top:1px solid var(--pb-div)}
+.pbacctrig{display:flex;align-items:center;gap:8px;width:100%;padding:8px 6px;border-radius:10px;border:none;background:transparent;text-align:left;cursor:pointer}
+.pbacctrig:hover{background:var(--pb-surface2)}
+.pbav{width:28px;height:28px;border-radius:50%;background:var(--pb-text);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.pbacnm{font-size:13px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbacrole{font-size:11px;color:var(--pb-muted);line-height:1.25}
+.pbmenu{position:absolute;bottom:56px;left:12px;right:12px;background:#fff;border:1px solid var(--pb-div);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.14);padding:5px;z-index:70}
+.pbmenu button{display:block;width:100%;text-align:left;padding:8px 10px;border:none;background:transparent;border-radius:7px;font-size:12.5px;color:var(--pb-text);cursor:pointer}
+.pbmenu button:hover{background:var(--pb-surface2)}
+
+/* ── buttons / fields ── */
+.pbbtn{padding:6px 13px;border-radius:var(--pb-r-md);font-size:12.5px;font-weight:600;border:1px solid var(--pb-div);background:#fff;color:var(--pb-text);cursor:pointer}
+.pbbtn:hover{border-color:var(--pb-subtle)}
+.pbbtn-p{background:var(--pb-accent);border-color:var(--pb-accent);color:#fff}
+.pbbtn-p:hover{border-color:var(--pb-accent);filter:brightness(1.06)}
+.pbbtn-d{border-color:#e6c9c5;color:var(--pb-danger)}
+.pbbtn-sm{padding:4px 10px;font-size:11.5px}
+.pbbtn-gh{border-color:transparent;background:transparent;color:var(--pb-muted)}
+.pbf-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pb-subtle);display:block;margin-bottom:5px}
+.pbfld{width:100%;padding:8px 10px;border:1px solid var(--pb-field-line);border-radius:var(--pb-r-sm);font-size:13px;background:#fff;color:var(--pb-text)}
+.pbfld:focus{outline:none;border-color:var(--pb-accent);box-shadow:0 0 0 3px var(--pb-accent-soft)}
+select.pbfld{appearance:none;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23888'/></svg>") no-repeat right 10px center}
+.pbhint{font-size:10.5px;color:var(--pb-subtle);margin-top:4px}
+.pbchz{display:flex;gap:5px;flex-wrap:wrap}
+.pbch{font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;background:#fff;border:1px solid var(--pb-field-line);color:var(--pb-muted);cursor:pointer;user-select:none}
+.pbch:hover{border-color:var(--pb-subtle)}
+.pbch.on{background:var(--pb-text);color:#fff;border-color:var(--pb-text)}
+.pbch.sm{font-size:11px;padding:4px 10px}
+.pbch.all{border-style:dashed}
+
+/* ── cards ── */
+.pbcard{background:#fff;border:1px solid var(--pb-div);border-radius:var(--pb-r-lg);margin-bottom:14px}
+.pbcardhd{display:flex;align-items:center;gap:9px;padding:11px 15px;border-bottom:1px solid var(--pb-div);flex-wrap:wrap;row-gap:7px}
+.pbcardhd h3{margin:0;font-size:12.5px;font-weight:700}
+.pbcardhd .cnt{font-size:11px;color:var(--pb-subtle);font-weight:600}
+.pbcardhd .sp{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pbcardbd{padding:15px}
+.pbg2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pbg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pbmt{margin-top:12px}
+.pbedhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pbeyebrow{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--pb-subtle);text-transform:uppercase}
+.pbttl{font-size:23px;font-weight:700;letter-spacing:-.025em;margin-top:4px;border:1px solid transparent;border-radius:7px;padding:2px 6px;margin-left:-6px;width:100%;background:transparent}
+.pbttl:hover{border-color:var(--pb-div)}
+.pbttl:focus{outline:none;border-color:var(--pb-accent);background:#fff}
+.pbsub{font-size:12px;color:var(--pb-muted);margin-top:4px;line-height:1.5}
+
+/* rows */
+.pbrr{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.pbgrip{color:var(--pb-faint);cursor:pointer;font-size:12px;flex:none;background:none;border:none;padding:0 2px;line-height:1}
+.pbgrip:hover{color:var(--pb-text)}
+.pbx{border:none;background:transparent;color:var(--pb-faint);cursor:pointer;font-size:14px;flex:none;padding:0 4px}
+.pbx:hover{color:var(--pb-danger)}
+.pbaddrow{border:1px dashed var(--pb-field-line);background:transparent;color:var(--pb-muted);width:100%;padding:7px;border-radius:var(--pb-r-sm);font-size:12px;font-weight:600;cursor:pointer;margin-top:2px}
+.pbaddrow:hover{border-color:var(--pb-subtle);color:var(--pb-text)}
+
+/* sections */
+.pbsec{border:1px solid var(--pb-div);border-radius:var(--pb-r-md);margin-bottom:8px;background:#fff}
+.pbsec.open{border-color:var(--pb-text);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.pbsechd{display:flex;align-items:center;gap:9px;padding:9px 11px;flex-wrap:wrap;row-gap:6px}
+.pbstitle{flex:1;min-width:120px;font-size:13px;font-weight:600;border:1px solid transparent;background:transparent;padding:3px 6px;border-radius:6px}
+.pbstitle:hover{border-color:var(--pb-div)}
+.pbstitle:focus{outline:none;border-color:var(--pb-accent)}
+.pbsecbd{border-top:1px solid var(--pb-div)}
+.pbsecprev{padding:2px 11px 11px 32px;font-size:12px;color:var(--pb-muted);line-height:1.55;max-height:38px;overflow:hidden}
+.pbtg{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:4px 9px;border-radius:999px;border:1px solid var(--pb-div);color:var(--pb-subtle);background:#fff;cursor:pointer}
+.pbtg.on{background:var(--pb-warn-bg);border-color:#f0d9bd;color:var(--pb-warn-ink)}
+.pbtg .knob{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.pbtg.on .knob{opacity:1}
+.pbbadge{font-size:8.5px;font-weight:800;letter-spacing:.05em;padding:2px 6px;border-radius:4px;background:var(--pb-warn-bg);color:var(--pb-warn-ink)}
+.pbbadge.g{background:var(--pb-ok-bg);color:var(--pb-ok)}
+.pbempty{padding:22px;text-align:center;color:var(--pb-faint);font-size:12.5px;border:1px dashed var(--pb-field-line);border-radius:var(--pb-r-md)}
+.pbusedin{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--pb-muted);padding:10px 15px;background:var(--pb-surface2);border:1px solid var(--pb-div);border-radius:var(--pb-r-lg)}
+.pbusedin b{color:var(--pb-text)}
+.pbroutes{display:flex;gap:4px;background:var(--pb-surface2);border-radius:8px;padding:3px}
+.pbrt{font-size:11.5px;font-weight:600;color:var(--pb-muted);padding:5px 11px;border-radius:6px;cursor:pointer;border:none;background:transparent}
+.pbrt.on{background:#fff;color:var(--pb-text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* steps */
+.pbstep{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;margin-bottom:2px;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.pbstep:hover{background:var(--pb-surface2)}
+.pbstepno{font-size:9.5px;font-weight:800;color:var(--pb-faint);width:16px;flex:none}
+.pbsteptx{flex:1;min-width:0;line-height:1.2}
+.pbsteptx b{display:block;font-size:12.5px;font-weight:600;color:var(--pb-muted)}
+.pbsteptx i{display:block;font-style:normal;font-size:10.5px;color:var(--pb-subtle);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbstep.now,.pbstep.now:hover{background:var(--pb-text)}
+.pbstep.now .pbsteptx b{color:#fff;font-weight:700}
+.pbstep.now .pbsteptx i{color:rgba(255,255,255,.6)}
+.pbstep.now .pbstepno{color:rgba(255,255,255,.5)}
+.pbstep.done .pbsteptx b{color:var(--pb-text)}
+.pbstep.warn .pbsteptx i{color:var(--pb-warn-ink);font-weight:600}
+.pbtick{color:var(--pb-ok);font-weight:800;font-size:12px}
+.pbwr{color:var(--pb-warn-ink);font-weight:800;font-size:12px}
+
+/* narrow entry column */
+.narrow .pbg2,.narrow .pbg3{grid-template-columns:minmax(0,1fr)}
+.narrow .pbsechd .pbroutes{margin-left:27px}
+.narrow .pbtrow{flex-wrap:wrap;row-gap:6px}
+
+/* service picker */
+.pbsvc{border:1px solid var(--pb-div);border-radius:var(--pb-r-md);margin-bottom:7px;background:#fff}
+.pbsvc.on{border-color:var(--pb-text)}
+.pbsvchd{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;flex-wrap:wrap;row-gap:7px}
+.pbcbx{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--pb-field-line);flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:#fff;cursor:pointer}
+.pbcbx.on{background:var(--pb-accent);border-color:var(--pb-accent)}
+.pbsvcnm{flex:1;min-width:110px;font-size:13px;font-weight:600}
+.pbsvcmeta{font-size:11px;color:var(--pb-subtle)}
+.pbsvcbd{border-top:1px solid var(--pb-div);padding:11px 12px 12px 20px;background:var(--pb-surface2);border-radius:0 0 var(--pb-r-md) var(--pb-r-md)}
+.pbsecline{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:12.5px;color:var(--pb-muted)}
+.pbsecline.addon{padding-left:18px}
+
+/* pricing */
+.pbpr{display:grid;grid-template-columns:minmax(0,1fr) 130px 120px 28px;gap:8px;align-items:center;margin-bottom:7px}
+.pbprhd{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pb-subtle)}
+.pbtot{display:flex;justify-content:flex-end;gap:26px;font-size:12.5px;color:var(--pb-muted);padding:5px 36px 0 0}
+.pbtot b{color:var(--pb-text);min-width:120px;text-align:right;display:inline-block}
+.pbtot.big{font-size:15px;font-weight:700;color:var(--pb-text);padding-top:9px;margin-top:7px;border-top:1px solid var(--pb-div)}
+
+/* terms */
+.pbtrow{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--pb-div);border-radius:var(--pb-r-md);margin-bottom:6px;background:#fff;flex-wrap:wrap;row-gap:6px}
+.pbtrow .tn{flex:1;min-width:110px;font-size:12.5px;font-weight:600}
+.pbtrow.off{background:var(--pb-surface2);opacity:.75}
+.pbcover{font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:#eef2fb;color:#2b4a86}
+
+/* review */
+.pbrd{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--pb-div);font-size:13px;flex-wrap:wrap;row-gap:7px}
+.pbrd:last-child{border-bottom:none}
+.pbrd .ic{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex:none}
+.pbrd.ok .ic{background:var(--pb-ok)}
+.pbrd.no .ic{background:var(--pb-warn-ink)}
+.pbrd .go{margin-left:auto}
+.pbbigbtn{width:100%;padding:14px;border-radius:var(--pb-r-md);font-size:15px;font-weight:700;background:var(--pb-accent);border:none;color:#fff;cursor:pointer}
+.pbbigbtn:disabled{opacity:.6;cursor:default}
+
+/* preview column */
+.pbpv-wrap{padding:18px 20px 40px;background:var(--pb-surface2);border-left:1px solid var(--pb-div);min-width:0}
+.pbpv-wrap.wide .pbpaper{padding:30px 34px 34px}
+
+</style>
 </head>
 <body>
 <div id="app"></div>
@@ -21358,7 +21558,7 @@ function renderPaperPreview() {
   let endStr = "";
   if (client.startDate && client.contractDuration) { const dm = client.contractDuration.match(/(\d+)/); if (dm) { const sd = new Date(client.startDate); sd.setMonth(sd.getMonth()+parseInt(dm[1])); sd.setDate(sd.getDate()-1); endStr = sd.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); } }
   h += cell("CLIENT", client.name) + cell("SIGNING AUTHORITY", client.signingAuthority ? client.signingAuthority + (client.designation?", "+client.designation:"") : "") + cell("DURATION", client.contractDuration);
-  h += cell("PERIOD", client.startDate ? new Date(client.startDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) + (endStr?" – "+endStr:"") : "") + cell("PAYMENT MODEL", editedPayment.length ? editedPayment[0].title.replace(" Payment Terms","") : "") + cell("BILLING ENTITY", "CCT Digisol Pvt Ltd");
+  h += cell("PERIOD", client.startDate ? new Date(client.startDate).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) + (endStr?" – "+endStr:"") : "") + cell("PAYMENT MODEL", editedPayment.length ? editedPayment[0].title.replace(" Payment Terms","") : "") + cell("BILLING ENTITY", docOpts.entity);
   h += `</div>`;
   const ph2 = (num, t) => `<div style="color:#B12418;font-weight:700;font-size:12.5px;border-bottom:2px solid #B12418;padding-bottom:3px;margin:20px 0 10px;letter-spacing:0.5px">${num}  ${t.toUpperCase()}</div>`;
   // scope
@@ -21396,7 +21596,7 @@ function renderPaperPreview() {
         }
       }
     } else {
-      h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${priced.length===1?esc(priced[0].amount)+" + GST (18%)":"As above + GST (18%)"}</td></tr>`;
+      h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${(priced.length===1?esc(priced[0].amount):"As above")+(taxRate>0?" + GST ("+taxRate+"%)":"")}</td></tr>`;
     }
     h += `</table>`;
   } else {
@@ -21828,8 +22028,8 @@ async function handleGenerate() {
                 ] }),
                 new TableRow({ children: [
                   summaryCell("Payment Model", editedPayment.length ? editedPayment[0].title.replace(" Payment Terms","") : "TBD", w3),
-                  summaryCell("Billing Entity", "CCT Digisol Pvt Ltd", w3),
-                  summaryCell("Proposal Validity", "15 Days", w3),
+                  summaryCell("Billing Entity", docOpts.entity, w3),
+                  summaryCell("Proposal Validity", docOpts.validity, w3),
                 ] }),
               ]
             }),
@@ -21873,7 +22073,7 @@ async function handleGenerate() {
     const url = URL.createObjectURL(buffer);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "CC_Proposal_" + client.name.replace(/[^a-zA-Z0-9]/g, "_") + ".docx";
+    a.download = docFileName();
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -22438,6 +22638,852 @@ window.addEventListener("beforeunload", function(e) {
   const builderUnsaved = editedSections.length > 0 && JSON.stringify(builderState()) !== lastDraftSnapshot;
   if (cloudDirty || builderUnsaved) { e.preventDefault(); e.returnValue = ""; }
 });
+
+/* ════════════════════════════════════════════════════════════════
+   THE SHELL REBUILD — 2026-08-05
+   Appended, not spliced: every function below re-declares one above it,
+   so the old definition is replaced without touching the code around it.
+   ════════════════════════════════════════════════════════════════ */
+
+// ═══════════════════════════════════════════════
+//  NEW STATE
+// ═══════════════════════════════════════════════
+let pbCurrency = "INR";
+let docOpts = { fileName: "", entity: "CCT Digisol Pvt Ltd", validity: "15 Days" };
+function docFileName() {
+  if (docOpts.fileName) return docOpts.fileName;
+  return "CC_Proposal_" + String(client.name || "Untitled").replace(/[^a-zA-Z0-9]/g, "_") + ".docx";
+}
+
+// ═══════════════════════════════════════════════
+//  BEHAVIOUR FIXES
+// ═══════════════════════════════════════════════
+/* Add-ons are included by default. They used to default off and were easy
+   to scroll past, which is how proposals went out missing them. */
+function buildGroup(svc, route) {
+  const secs = (svc.sections || []).filter(s => (s.route === route || s.route === "both") && s.content)
+    .map(s => ({ ...s, editedTitle: s.title, editedContent: s.content }));
+  return { svcId: svc.id, svcTitle: svc.title, sectionTitle: svc.sectionTitle || "", route, sections: secs, sla: svc.sla || "" };
+}
+
+/* Switching route keeps what you wrote. The old version rebuilt the group
+   from the Data Bank, so every edit for that service was destroyed and
+   could not be recovered by switching back. */
+function canvasSetRoute(svcId, route) {
+  const gi = editedSections.findIndex(g => g.svcId === svcId);
+  if (gi < 0) return;
+  const g = editedSections[gi];
+  if ((g.route || "1") === route) return;
+  const cache = g.routeCache || {};
+  cache[g.route || "1"] = g.sections;
+  const svc = data.services.find(s => s.id === svcId);
+  if (cache[route]) { g.sections = cache[route]; g.route = route; g.routeCache = cache; }
+  else { const fresh = buildGroup(svc, route); fresh.routeCache = cache; editedSections[gi] = fresh; }
+  pbEditingId = null;
+  autoSaveDraft(); render();
+}
+
+function addSvcToProposal(svcId, route) {
+  const svc = data.services.find(s => s.id === svcId);
+  if (!svc || svcInProposal(svcId)) return;
+  editedSections.push(buildGroup(svc, route || "1"));
+  if (!pricingItems.some(pi => pi.svcId === svcId)) {
+    const def = me.role === "admin" ? deriveDefaultAmount(svc.pricing) : "";
+    const a = def ? parseAmount(def) : null;
+    pricingItems.push({
+      svcId,
+      title: (svc.sectionTitle && svc.sectionTitle.trim()) ? svc.sectionTitle.trim() : svc.title + (svc.type ? " (" + svc.type + ")" : ""),
+      amount: def, num: a ? String(a.v) : "", unit: a ? (a.unit || "") : "",
+      variation: "", range: me.role === "admin" ? (svc.pricing || "") : "", variations: []
+    });
+  }
+}
+function addPricingLine() {
+  pricingItems.push({ svcId: null, title: "", amount: "", num: "", unit: "", variation: "", range: "", variations: [] });
+  autoSaveDraft(); render();
+  setTimeout(() => { const els = document.querySelectorAll(".priceTitle"); if (els.length) els[els.length - 1].focus(); }, 50);
+}
+
+
+// ═══════════════════════════════════════════════
+//  MAIN RENDER — the shell shared with the Marketing Calendar
+// ═══════════════════════════════════════════════
+let acctMenuOpen = false;
+const PB_PLATFORM_URL = "https://communicationcraftshq.github.io/BrandCalendar/app.html";
+
+function saveChip() {
+  if (cloudErr) return `<span class="pbsave err" title="${esc(cloudErr)}">● Not saved</span>`;
+  if (cloudSaving) return `<span class="pbsave">● Saving…</span>`;
+  if (cloudDirty) return `<span class="pbsave">● Saving…</span>`;
+  return `<span class="pbsave">● Saved ✓</span>`;
+}
+function acctBlock() {
+  const nm = (me.email || "").split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const role = me.role === "admin" ? "Admin" : "Member";
+  let h = `<div class="pbacct">`;
+  if (acctMenuOpen) {
+    h += `<div class="pbmenu">
+      <button onclick="window.open('${PB_PLATFORM_URL}','_blank')">People &amp; access ↗</button>
+      <button onclick="window.open('https://communicationcraftshq.github.io/BrandCalendar/','_blank')">Marketing Calendar ↗</button>
+      <button onclick="doLogout()">Sign out</button>
+    </div>`;
+  }
+  h += `<button class="pbacctrig" onclick="acctMenuOpen=!acctMenuOpen;render()">
+    <span class="pbav">${esc((nm[0] || "?").toUpperCase())}</span>
+    <span style="display:flex;flex-direction:column;flex:1;min-width:0">
+      <span class="pbacnm">${esc(nm || me.email || "")}</span>
+      <span class="pbacrole">${role}</span>
+    </span>
+    <span style="color:var(--pb-subtle);font-size:12px">${acctMenuOpen ? "⌄" : "⌃"}</span>
+  </button></div>`;
+  return h;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  if (!me.role) { app.innerHTML = gateHtml(); return; }
+  if (me.role !== "admin" && mainTab !== "builder") mainTab = "builder";
+  if (mainTab === "dash") mainTab = "bank"; // the dashboard now lives in CC Platform
+
+  let h = `<div class="pbnav">
+    <div class="pbnav-brand">Proposal Bank<span class="dot">.</span></div>
+    <span class="pbnav-sep"></span>
+    <span class="pbmode">
+      ${me.role === "admin" ? `<button class="${mainTab === "bank" ? "on" : ""}" onclick="mainTab='bank';acctMenuOpen=false;render()">Data Bank</button>` : ""}
+      <button class="${mainTab === "builder" ? "on" : ""}" onclick="mainTab='builder';acctMenuOpen=false;render()">Build Proposal</button>
+    </span>
+    <div class="pbnav-right">${saveChip()}${navActions()}</div>
+  </div>`;
+
+  const three = mainTab === "builder";
+  h += `<div class="pbbody${three ? " three" : ""}" style="--entry:${three ? entryWidth() : 380}px">`;
+  h += `<div class="pbside">${mainTab === "bank" ? dbSidebar() : pbSidebar()}${acctBlock()}</div>`;
+
+  if (me.role === "admin" && bankEmpty) {
+    h += `<div class="pbmain"><div class="pbcard" style="padding:16px"><b>The cloud Data Bank is empty.</b><div class="pbsub">Import your data file to load your services and terms.</div><button class="pbbtn pbbtn-p" style="margin-top:12px" onclick="document.getElementById('bankImport').click()">Import data file</button><input type="file" id="bankImport" accept=".json" style="display:none" onchange="importBankFile(this)"/></div></div>`;
+  } else if (mainTab === "bank") {
+    h += `<div class="pbmain">${renderDataBank()}</div>`;
+  } else {
+    h += renderProposalBuilder();
+  }
+  h += `</div>`;
+  app.innerHTML = h;
+}
+
+// ═══════════════════════════════════════════════
+//  DATA BANK — side panel carries all navigation
+// ═══════════════════════════════════════════════
+function dbCounts() {
+  return { services: data.services.length, common: data.commonSections.length, payment: data.paymentTerms.length };
+}
+function dbFilteredServices() {
+  return data.services
+    .filter(s => catFilter === "All" || s.category === catFilter)
+    .sort((a, b) => {
+      if (a.type === "Retainer" && b.type !== "Retainer") return -1;
+      if (a.type !== "Retainer" && b.type === "Retainer") return 1;
+      return (a.title || "").localeCompare(b.title || "");
+    });
+}
+function dbSidebar() {
+  const c = dbCounts();
+  let h = `<div class="pbside-scroll">`;
+  h += `<div class="pbseg">
+    <button class="pbsg ${dbTab === "services" ? "on" : ""}" onclick="dbTab='services';dbEditingSec=null;render()"><b>Services</b><i>${c.services}</i></button>
+    <button class="pbsg ${dbTab === "common" ? "on" : ""}" onclick="dbTab='common';dbEditingSec=null;render()"><b>Clauses</b><i>${c.common}</i></button>
+    <button class="pbsg ${dbTab === "payment" ? "on" : ""}" onclick="dbTab='payment';dbEditingSec=null;render()"><b>Payment</b><i>${c.payment}</i></button>
+  </div>`;
+
+  if (dbTab === "services") {
+    const cats = [...new Set(data.services.map(s => s.category).filter(Boolean))].sort();
+    h += `<div class="pblbl">Filter</div><div class="pbpills">`;
+    for (const cat of cats) {
+      const n = data.services.filter(s => s.category === cat).length;
+      h += `<button class="pbpill ${catFilter === cat ? "on" : ""}" onclick="catFilter=${JSON.stringify(cat)};render()">${esc(cat)}</button>`;
+      void n;
+    }
+    h += `<button class="pbpill all ${catFilter === "All" ? "on" : ""}" onclick="catFilter='All';render()">All <i>${c.services}</i></button>`;
+    h += `</div>`;
+
+    const list = dbFilteredServices();
+    let lastCat = null;
+    for (const s of list) {
+      const cat = s.category || "Uncategorised";
+      if (cat !== lastCat) {
+        const n = list.filter(x => (x.category || "Uncategorised") === cat).length;
+        h += `<div class="pblbl" style="margin-top:14px">${esc(cat)} · ${n}</div>`;
+        lastCat = cat;
+      }
+      const on = dbSel.services === s.id;
+      const tag = s.type === "Retainer" ? `<span class="pbtag r" title="Retainer">R</span>`
+        : s.type === "Ad Hoc" ? `<span class="pbtag a" title="Ad hoc">A</span>` : "";
+      h += `<button class="pbrow ${on ? "on" : ""}" onclick="dbSel.services='${s.id}';dbEditingSec=null;render()"><span class="nm">${esc(s.title)}</span>${tag}</button>`;
+    }
+    h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:12px" onclick="addService()">+ New service</button>`;
+    h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:6px" onclick="openServiceWizard()">⚡ New from paste</button>`;
+    h += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--pb-div);display:flex;gap:10px;justify-content:center">
+      <button onclick="exportCsvTemplate()" title="Optional spreadsheet backup" style="border:none;background:none;color:var(--pb-faint);font-size:10px;cursor:pointer;text-decoration:underline">Backup CSV</button>
+      <button onclick="document.getElementById('csvInput').click()" title="Restore services from a CSV backup" style="border:none;background:none;color:var(--pb-faint);font-size:10px;cursor:pointer;text-decoration:underline">Restore CSV</button>
+    </div><input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleCsvImport(this)"/>`;
+  } else {
+    const list = dbTab === "common" ? data.commonSections : data.paymentTerms;
+    const key = dbTab;
+    h += `<div class="pblbl">${dbTab === "common" ? "Clauses" : "Payment terms"} · ${list.length}</div>`;
+    for (const s of list) {
+      const on = dbSel[key] === s.id;
+      h += `<button class="pbrow ${on ? "on" : ""}" onclick="dbSel.${key}='${s.id}';dbEditingSec=null;render()"><span class="nm">${esc(s.title)}</span></button>`;
+    }
+    h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:12px" onclick="${dbTab === "common" ? "addCommon()" : "addPayment()"}">+ New ${dbTab === "common" ? "clause" : "payment term"}</button>`;
+  }
+  h += `</div>`;
+  return h;
+}
+
+function renderDataBank() {
+  if (dbTab === "services") return renderSvcDetail();
+  if (dbTab === "common") return renderClauseDetail("common", data.commonSections, "updateCommon", "deleteCommon");
+  return renderClauseDetail("payment", data.paymentTerms, "updatePaymentTerm", "deletePaymentTerm");
+}
+
+// ── how many saved proposals use this service ──
+function usedInInfo(svcId) {
+  let n = 0, last = null;
+  for (const d of (drafts || [])) {
+    const st = d.state || {};
+    if (st.selectedSvcs && st.selectedSvcs[svcId]) {
+      n++;
+      const t = d.savedAt ? new Date(d.savedAt) : null;
+      if (t && (!last || t > last)) last = t;
+    }
+  }
+  return { n, last };
+}
+function usedInLine(svcId) {
+  const { n, last } = usedInInfo(svcId);
+  if (!n) return `<div class="pbusedin">Not used in any saved proposal yet</div>`;
+  const when = last ? " · last on " + last.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
+  return `<div class="pbusedin"><span>Used in <b>${n} proposal${n === 1 ? "" : "s"}</b>${when}</span>
+    <span style="margin-left:auto;color:var(--pb-subtle)">Deleting will not change proposals already generated</span></div>`;
+}
+
+// ── variations / cost factors as real rows ──
+function splitLines(v) { return String(v || "").split(/\r?\n/).map(l => l.trim().replace(/^\d+\.\s*/, "")).filter(Boolean); }
+function varRows(svc) { return splitLines(svc.variations).map(l => { const p = l.split(/\s*=\s*/); return { v: p[0] || "", t: p.slice(1).join(" = ") || "" }; }); }
+function writeVarRows(svcId, rows) {
+  const txt = rows.map(r => (r.t ? r.v + " = " + r.t : r.v)).filter(s => s.trim()).join("\n");
+  updateService(svcId, "variations", txt);
+}
+function setVar(svcId, i, which, val) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = varRows(svc); if (!rows[i]) return; rows[i][which] = val; writeVarRows(svcId, rows); }
+function addVar(svcId) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = varRows(svc); rows.push({ v: "", t: "" }); writeVarRows(svcId, rows); }
+function delVar(svcId, i) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = varRows(svc); rows.splice(i, 1); writeVarRows(svcId, rows); }
+function moveVar(svcId, i, d) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = varRows(svc); const j = i + d; if (j < 0 || j >= rows.length) return; const t = rows[i]; rows[i] = rows[j]; rows[j] = t; writeVarRows(svcId, rows); }
+
+function cfRows(svc) { return splitLines(svc.costFactors); }
+function writeCfRows(svcId, rows) { updateService(svcId, "costFactors", rows.filter(s => String(s).trim()).join("\n")); }
+function setCf(svcId, i, val) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = cfRows(svc); rows[i] = val; writeCfRows(svcId, rows); }
+function addCf(svcId) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = cfRows(svc); rows.push(""); writeCfRows(svcId, rows); }
+function delCf(svcId, i) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = cfRows(svc); rows.splice(i, 1); writeCfRows(svcId, rows); }
+function moveCf(svcId, i, d) { const svc = data.services.find(s => s.id === svcId); if (!svc) return; const rows = cfRows(svc); const j = i + d; if (j < 0 || j >= rows.length) return; const t = rows[i]; rows[i] = rows[j]; rows[j] = t; writeCfRows(svcId, rows); }
+
+// ── sections: reorder, add-on toggle, SLA ──
+function moveSection(svcId, secId, dir) {
+  const svc = data.services.find(s => s.id === svcId); if (!svc || !svc.sections) return;
+  const i = svc.sections.findIndex(s => s.id === secId); if (i < 0) return;
+  const j = i + dir; if (j < 0 || j >= svc.sections.length) return;
+  const t = svc.sections[i]; svc.sections[i] = svc.sections[j]; svc.sections[j] = t;
+  saveData(); render();
+}
+function toggleAddon(svcId, secId) {
+  const svc = data.services.find(s => s.id === svcId); if (!svc) return;
+  const sec = (svc.sections || []).find(s => s.id === secId); if (!sec) return;
+  sec.addon = !sec.addon; saveData(); render();
+}
+function startSla(svcId) {
+  const svc = data.services.find(s => s.id === svcId); if (!svc) return;
+  if (!svc.sla) svc.sla = "<div>Write the service level agreement here.</div>";
+  dbEditingSec = svcId + "-sla"; saveData(); render();
+}
+function clearSla(svcId) {
+  if (!confirm("Remove the SLA for this service?")) return;
+  const svc = data.services.find(s => s.id === svcId); if (!svc) return;
+  svc.sla = ""; dbEditingSec = null; saveData(); render();
+}
+const PB_MARKETS = [["IND", "India only"], ["IND + US", "India + US"], ["INTL", "International"]];
+
+function renderSvcDetail() {
+  const svc = data.services.find(s => s.id === dbSel.services);
+  if (!svc) return `<div class="pbempty" style="margin-top:40px">Select a service on the left, or add a new one.</div>`;
+  const cats = [...new Set(data.services.map(s => s.category).filter(Boolean))].sort();
+  if (svc.category && !cats.includes(svc.category)) cats.push(svc.category);
+
+  const eyebrow = [svc.category, svc.type, (PB_MARKETS.find(m => m[0] === svc.market) || [])[1]].filter(Boolean).join(" · ");
+  let h = `<div class="pbedhead">
+    <div style="flex:1;min-width:240px">
+      <div class="pbeyebrow">${esc(eyebrow || "Service")}</div>
+      <input class="pbttl" value="${esc(svc.title)}" onchange="updateService('${svc.id}','title',this.value)"/>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:18px">
+      <button class="pbbtn pbbtn-sm" onclick="duplicateService('${svc.id}')">Duplicate</button>
+      <button class="pbbtn pbbtn-sm pbbtn-d" onclick="deleteService('${svc.id}')">Delete</button>
+    </div></div>`;
+
+  // DETAILS
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Details</h3><span class="cnt">how this service is classified and priced</span></div><div class="pbcardbd">`;
+  h += `<div class="pbg3">
+    <div><label class="pbf-lbl">Category</label>
+      <select class="pbfld" onchange="updateService('${svc.id}','category',this.value)">
+        <option value=""${!svc.category ? " selected" : ""}>—</option>
+        ${cats.map(c => `<option${svc.category === c ? " selected" : ""}>${esc(c)}</option>`).join("")}
+      </select></div>
+    <div><label class="pbf-lbl">Type</label><div class="pbchz">
+      <button class="pbch ${svc.type === "Retainer" ? "on" : ""}" onclick="updateService('${svc.id}','type','Retainer')">Retainer</button>
+      <button class="pbch ${svc.type === "Ad Hoc" ? "on" : ""}" onclick="updateService('${svc.id}','type','Ad Hoc')">Ad Hoc</button>
+    </div></div>
+    <div><label class="pbf-lbl">Market</label><div class="pbchz">
+      ${PB_MARKETS.map(([k, l]) => `<button class="pbch ${svc.market === k ? "on" : ""}" onclick="updateService('${svc.id}','market','${k}')">${l}</button>`).join("")}
+    </div></div>
+  </div>`;
+  h += `<div class="pbg2 pbmt">
+    <div><label class="pbf-lbl">Pricing range</label>
+      <input class="pbfld" value="${esc(svc.pricing || "")}" placeholder="e.g. Rs 75,000 to Rs 1,55,000 / month" onchange="updateService('${svc.id}','pricing',this.value)"/>
+      <div class="pbhint">Written as “X to Y” — it becomes the From / To guideline</div></div>
+    <div><label class="pbf-lbl">Heading in the Word document</label>
+      <input class="pbfld" value="${esc(svc.sectionTitle || "")}" placeholder="e.g. Branding &amp; Design Services" onchange="updateService('${svc.id}','sectionTitle',this.value)"/></div>
+  </div></div></div>`;
+
+  // VARIATIONS
+  const vr = varRows(svc);
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Variations</h3><span class="cnt">${vr.length}</span><span class="sp"><span class="pbhint" style="margin:0">what changes, and who is needed for it</span></span></div><div class="pbcardbd">`;
+  if (vr.length) {
+    h += `<div class="pbrr" style="margin-bottom:8px"><span style="width:16px"></span><span class="pbf-lbl" style="flex:1;margin:0">Variation</span><span class="pbf-lbl" style="flex:1;margin:0">Team allocation</span><span style="width:22px"></span></div>`;
+  }
+  vr.forEach((r, i) => {
+    h += `<div class="pbrr">
+      <span style="display:flex;flex-direction:column;width:16px">
+        <button class="pbgrip" title="Move up" onclick="moveVar('${svc.id}',${i},-1)">▲</button>
+        <button class="pbgrip" title="Move down" onclick="moveVar('${svc.id}',${i},1)">▼</button></span>
+      <input class="pbfld" value="${esc(r.v)}" onchange="setVar('${svc.id}',${i},'v',this.value)"/>
+      <input class="pbfld" value="${esc(r.t)}" onchange="setVar('${svc.id}',${i},'t',this.value)"/>
+      <button class="pbx" title="Remove" onclick="delVar('${svc.id}',${i})">✕</button></div>`;
+  });
+  h += `<button class="pbaddrow" onclick="addVar('${svc.id}')">+ Add variation</button></div></div>`;
+
+  // COST FACTORS
+  const cf = cfRows(svc);
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Cost factors</h3><span class="cnt">${cf.length}</span></div><div class="pbcardbd">`;
+  cf.forEach((r, i) => {
+    h += `<div class="pbrr">
+      <span style="display:flex;flex-direction:column;width:16px">
+        <button class="pbgrip" title="Move up" onclick="moveCf('${svc.id}',${i},-1)">▲</button>
+        <button class="pbgrip" title="Move down" onclick="moveCf('${svc.id}',${i},1)">▼</button></span>
+      <input class="pbfld" value="${esc(r)}" onchange="setCf('${svc.id}',${i},this.value)"/>
+      <button class="pbx" title="Remove" onclick="delCf('${svc.id}',${i})">✕</button></div>`;
+  });
+  h += `<button class="pbaddrow" onclick="addCf('${svc.id}')">+ Add cost factor</button></div></div>`;
+
+  // PROPOSAL SECTIONS
+  const hasR2 = (svc.sections || []).some(s => s.route === "2");
+  const currentRoute = dbRouteView[svc.id] || "1";
+  const routeSecs = (svc.sections || []).filter(s => s.route === currentRoute || s.route === "both");
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Proposal sections</h3><span class="cnt">${routeSecs.length}</span><span class="sp">`;
+  if (hasR2) {
+    h += `<span class="pbroutes">
+      <button class="pbrt ${currentRoute === "1" ? "on" : ""}" onclick="dbRouteView['${svc.id}']='1';dbEditingSec=null;render()">Route 1 — Detailed</button>
+      <button class="pbrt ${currentRoute === "2" ? "on" : ""}" onclick="dbRouteView['${svc.id}']='2';dbEditingSec=null;render()">Route 2 — Simple</button></span>`;
+  }
+  h += `<button class="pbbtn pbbtn-sm" onclick="openPasteModal('newsec','${svc.id}')">⚡ Paste content</button>
+    <button class="pbbtn pbbtn-sm pbbtn-p" onclick="addSection('${svc.id}')">+ Section</button>
+  </span></div><div class="pbcardbd">`;
+  if (!routeSecs.length) {
+    h += `<div class="pbempty">No sections for Route ${currentRoute} yet.</div>`;
+  }
+  for (const sec of routeSecs) {
+    const secKey = svc.id + "-" + sec.id;
+    const open = dbEditingSec === secKey;
+    h += `<div class="pbsec ${open ? "open" : ""}">
+      <div class="pbsechd">
+        <span style="display:flex;flex-direction:column;width:14px">
+          <button class="pbgrip" title="Move up" onclick="moveSection('${svc.id}','${sec.id}',-1)">▲</button>
+          <button class="pbgrip" title="Move down" onclick="moveSection('${svc.id}','${sec.id}',1)">▼</button></span>
+        <input class="pbstitle" value="${esc(sec.title)}" onchange="updateSection('${svc.id}','${sec.id}','title',this.value)"/>
+        <button class="pbtg ${sec.addon ? "on" : ""}" title="Add-on sections are optional extras" onclick="toggleAddon('${svc.id}','${sec.id}')"><span class="knob"></span>ADD ON</button>
+        <button class="pbbtn pbbtn-sm" onclick="dbEditingSec=${open ? "null" : "'" + secKey + "'"};render()">${open ? "Close" : "Edit"}</button>
+        <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="deleteSection('${svc.id}','${sec.id}')">Delete</button>
+      </div>`;
+    if (open) h += `<div class="pbsecbd">${richEditorHtml("dbsec:" + svc.id + ":" + sec.id, sec.content)}</div>`;
+    else if (sec.content) h += `<div class="pbsecprev">${renderRichContent(sec.content, false)}</div>`;
+    h += `</div>`;
+  }
+  h += `</div></div>`;
+
+  // SLA
+  const slaOpen = dbEditingSec === svc.id + "-sla";
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Service level agreement</h3><span class="cnt">${svc.sla ? "included in proposals that ask for it" : "not set"}</span>`;
+  if (svc.sla) {
+    h += `<span class="sp"><button class="pbbtn pbbtn-sm" onclick="dbEditingSec=${slaOpen ? "null" : "'" + svc.id + "-sla'"};render()">${slaOpen ? "Close" : "Edit"}</button>
+      <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="clearSla('${svc.id}')">Remove</button></span>`;
+  }
+  h += `</div><div class="pbcardbd">`;
+  if (!svc.sla) h += `<div class="pbempty">No SLA for this service yet.<br><button class="pbbtn pbbtn-sm" style="margin-top:10px" onclick="startSla('${svc.id}')">+ Write an SLA</button></div>`;
+  else if (slaOpen) h += richEditorHtml("dbsla:" + svc.id, svc.sla);
+  else h += renderRichContent(svc.sla, false);
+  h += `</div></div>`;
+
+  h += usedInLine(svc.id);
+  return h;
+}
+
+function renderClauseDetail(selKey, list, updateFnName, deleteFnName) {
+  const item = list.find(s => s.id === dbSel[selKey]);
+  const what = selKey === "common" ? "clause" : "payment term";
+  if (!item) return `<div class="pbempty" style="margin-top:40px">Select a ${what} on the left, or add a new one.</div>`;
+  const target = (selKey === "common" ? "clause:" : "payterm:") + item.id;
+  const eyebrow = selKey === "common" ? "Clause · appears in every proposal by default" : "Payment term · picked per proposal";
+  let h = `<div class="pbedhead">
+    <div style="flex:1;min-width:240px">
+      <div class="pbeyebrow">${eyebrow}</div>
+      <input class="pbttl" value="${esc(item.title)}" onchange="rteSetTitle('${target}',this.value)"/>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:18px">
+      <button class="pbbtn pbbtn-sm pbbtn-d" onclick="${deleteFnName}('${item.id}')">Delete</button>
+    </div></div>`;
+  h += `<div class="pbcard"><div class="pbcardbd" style="padding:0">${richEditorHtml(target, item.content)}</div></div>`;
+  const uses = selKey === "common"
+    ? `<div class="pbusedin"><span>Included in every new proposal</span><span style="margin-left:auto;color:var(--pb-subtle)">Editing this changes every future proposal</span></div>`
+    : `<div class="pbusedin"><span>Picked per proposal in step 05</span><span style="margin-left:auto;color:var(--pb-subtle)">The first one included becomes “Payment Model” on the cover</span></div>`;
+  h += uses;
+  return h;
+}
+
+
+// ═══════════════════════════════════════════════
+//  BUILD PROPOSAL — shell, side panel, per-step widths
+// ═══════════════════════════════════════════════
+/* The entry column is only as wide as the step needs; everything it
+   gives up goes to the document preview, which is the thing you are
+   watching form. Pricing is the exception — four columns, and you are
+   reading a table against a table. */
+const PB_ENTRY_W = { client: 380, services: 340, content: 340, pricing: 560, terms: 340, review: 380 };
+function entryWidth() { return PB_ENTRY_W[pbTab] || 380; }
+function entryNarrow() { return entryWidth() <= 380; }
+
+function navActions() {
+  if (mainTab !== "builder") return "";
+  let h = "";
+  if (editedSections.length || currentDraftId) {
+    h += `<button class="pbnav-btn" onclick="saveDraft('draft')">Save draft</button>`;
+    h += `<button class="pbnav-btn" onclick="newProposal()">＋ New</button>`;
+  }
+  h += `<button class="pbnav-btn red" ${generating ? "disabled" : ""} onclick="canvasGenerate()">${generating ? "Generating…" : "Generate Word ↓"}</button>`;
+  return h;
+}
+
+function pbSidebar() {
+  let h = `<div class="pbside-scroll">`;
+  h += `<div class="pblbl">Proposal</div>`;
+  const nm = client.name || "Untitled proposal";
+  const cur = drafts.find(d => d.id === currentDraftId);
+  const when = cur ? new Date(cur.savedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "not saved yet";
+  h += `<button class="pbrow" style="background:var(--pb-surface2);border:1px solid var(--pb-div);border-radius:9px;padding:9px 11px;align-items:flex-start" onclick="showDraftsPanel=!showDraftsPanel;render()">
+    <span style="flex:1;min-width:0;text-align:left">
+      <span style="display:block;font-size:13px;font-weight:700;color:var(--pb-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nm)}</span>
+      <span style="display:block;font-size:11px;color:var(--pb-subtle)">${esc(when)}${cur && cur.status === "generated" ? " · generated" : ""}</span>
+    </span><span style="color:var(--pb-subtle);font-size:11px">${showDraftsPanel ? "▴" : "▾"}</span></button>`;
+
+  if (showDraftsPanel) {
+    h += `<div style="border:1px solid var(--pb-div);border-radius:9px;margin-top:6px;background:#fff;max-height:230px;overflow-y:auto">`;
+    if (!drafts.length) h += `<div class="pbempty" style="border:none">No drafts yet. Everything you build is saved as you go.</div>`;
+    for (const d of drafts) {
+      const dt = new Date(d.savedAt);
+      const w = dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      const on = d.id === currentDraftId;
+      h += `<div style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-bottom:1px solid var(--pb-div)">
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:12.5px;font-weight:${on ? 700 : 600};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.name)}</span>
+          <span style="font-size:10.5px;color:var(--pb-subtle)">${w} · ${d.status === "generated" ? "generated" : "draft"}</span></span>
+        <button class="pbbtn pbbtn-sm" onclick="loadDraft('${d.id}')">Open</button>
+        <button class="pbx" title="Delete draft" onclick="deleteDraft('${d.id}')">✕</button></div>`;
+    }
+    h += `</div>`;
+  }
+
+  h += `<div class="pblbl" style="margin-top:14px">Steps</div>`;
+  for (const [key, num, label] of PB_TABS) {
+    const on = pbTab === key;
+    const st = String(tabStatus(key));
+    const warn = st.includes("⚠") || st === "Not set" || st === "None selected";
+    const done = !warn && st !== "—" && st !== "Not set";
+    h += `<button class="pbstep ${on ? "now" : ""} ${warn ? "warn" : done ? "done" : ""}" onclick="pbTab='${key}';pbEditingId=null;render()">
+      <span class="pbstepno">${num}</span>
+      <span class="pbsteptx"><b>${label}</b><i>${esc(st.replace("⚠ ", ""))}</i></span>
+      ${warn ? `<span class="pbwr">!</span>` : done ? `<span class="pbtick">✓</span>` : ""}
+    </button>`;
+  }
+  h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:12px" onclick="newProposal()">＋ New proposal</button>`;
+  h += `</div>`;
+  return h;
+}
+
+function renderProposalBuilder() {
+  let h = `<div class="pbmain${entryNarrow() ? " narrow" : ""}">${renderTabPanel()}</div>`;
+  h += `<div class="pbpv-wrap${entryNarrow() ? " wide" : ""}">${renderPaperPreview()}</div>`;
+  return h;
+}
+
+function panelHead(kicker, title, sub, actions) {
+  return `<div class="pbedhead">
+    <div style="flex:1;min-width:220px">
+      <div class="pbeyebrow">${kicker}</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.025em;margin-top:3px">${title}</div>
+      ${sub ? `<div class="pbsub">${sub}</div>` : ""}
+    </div>
+    <div style="display:flex;gap:6px;padding-top:16px;flex-wrap:wrap">${actions || ""}</div></div>`;
+}
+function backBtn(key, label) { return `<button class="pbbtn pbbtn-sm" onclick="pbTab='${key}';pbEditingId=null;render()">← ${label}</button>`; }
+function nextBtn(key, label) { return `<button class="pbbtn pbbtn-sm pbbtn-p" onclick="pbTab='${key}';pbEditingId=null;render()">${label || "Next"} →</button>`; }
+
+// ── 01 CLIENT ────────────────────────────────────────────────
+const PB_DURATIONS = ["3 Calendar Months", "6 Calendar Months", "12 Calendar Months"];
+function setDuration(v) { client.contractDuration = v; autoSaveDraft(); render(); }
+function contractPeriodText() {
+  if (!client.startDate) return "";
+  const m = String(client.contractDuration || "").match(/(\d+)/);
+  const months = m ? parseInt(m[1]) : 0;
+  const s = new Date(client.startDate);
+  if (isNaN(s) || !months) return "";
+  const e = new Date(s); e.setMonth(e.getMonth() + months); e.setDate(e.getDate() - 1);
+  /* fixed month names — toLocaleDateString gives "Sept" in some engines
+     and "Sep" in others, and this string goes on the cover page */
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const f = d => d.getDate() + " " + MON[d.getMonth()] + " " + d.getFullYear();
+  return f(s) + " — " + f(e);
+}
+function panelClient() {
+  const isCustom = !PB_DURATIONS.includes(client.contractDuration || "");
+  let h = panelHead("Step 01", "Client",
+    "Everything here lands on the cover page. Watch it appear on the right as you type.",
+    nextBtn("services", "Next: Services"));
+  const cf = (label, key, ph) => `<div><label class="pbf-lbl">${label}</label><input class="pbfld" value="${esc(client[key] || "")}" oninput="client.${key}=this.value" onchange="autoSaveDraft();render()" ${ph ? `placeholder="${ph}"` : ""}/></div>`;
+  h += `<div class="pbcard"><div class="pbcardbd">`;
+  h += `<div class="pbg2">${cf("Client / company name", "name")}${cf("Signing authority", "signingAuthority")}</div>`;
+  h += `<div class="pbg2 pbmt">${cf("Designation", "designation")}
+    <div><label class="pbf-lbl">Contract duration</label><div class="pbchz">
+      ${PB_DURATIONS.map(d => `<button class="pbch ${client.contractDuration === d ? "on" : ""}" onclick="setDuration('${d}')">${d.replace(" Calendar Months", " months")}</button>`).join("")}
+      <button class="pbch ${isCustom ? "on" : ""}" onclick="setDuration('')">Custom</button></div>
+      ${isCustom ? `<input class="pbfld" style="margin-top:7px" value="${esc(client.contractDuration || "")}" placeholder="e.g. 18 Calendar Months" oninput="client.contractDuration=this.value" onchange="autoSaveDraft();render()"/>` : ""}
+    </div></div>`;
+  h += `<div class="pbg2 pbmt">
+    <div><label class="pbf-lbl">Contract start date</label><input class="pbfld" type="date" value="${client.startDate || ""}" oninput="client.startDate=this.value" onchange="autoSaveDraft();render()"/></div>
+    <div><label class="pbf-lbl">Contract period <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--pb-faint)">— worked out for you</span></label>
+      <input class="pbfld" readonly style="background:var(--pb-surface2);color:var(--pb-muted)" value="${esc(contractPeriodText() || "set a start date")}"/></div>
+  </div>`;
+  h += `<div class="pbmt"><label class="pbf-lbl">Address</label><textarea class="pbfld" rows="2" oninput="client.address=this.value" onchange="autoSaveDraft();render()">${esc(client.address || "")}</textarea></div>`;
+  h += `</div></div>`;
+  return h;
+}
+
+// ── 02 SERVICES ──────────────────────────────────────────────
+function panelServices() {
+  let h = panelHead("Step 02", "Services", "Tick a service, then choose which of its sections go in.",
+    backBtn("client", "Client") + nextBtn("content", "Next: Content"));
+
+  const marketSvcs = data.services.filter(sv => marketAllows(sv) && (me.role === "admin" || !svcThin(sv)));
+  const cats = [...new Set(marketSvcs.map(x => x.category).filter(Boolean))].sort();
+  if (pbCat !== "All" && !cats.includes(pbCat)) pbCat = "All";
+
+  h += `<div class="pbcard"><div class="pbcardbd">
+    <div><label class="pbf-lbl">Market</label><div class="pbchz">
+      <button class="pbch sm ${pbMarket === "IND" ? "on" : ""}" onclick="setMarket('IND')">India</button>
+      <button class="pbch sm ${pbMarket === "INTL" ? "on" : ""}" onclick="setMarket('INTL')">International</button>
+    </div></div>
+    <div class="pbmt"><label class="pbf-lbl">Category</label><div class="pbchz">
+      ${cats.map(c => `<button class="pbch sm ${pbCat === c ? "on" : ""}" onclick="pbCat=${JSON.stringify(c)};render()">${esc(c)}</button>`).join("")}
+      <button class="pbch sm all ${pbCat === "All" ? "on" : ""}" onclick="pbCat='All';render()">All <span style="opacity:.5">${marketSvcs.length}</span></button>
+    </div></div></div></div>`;
+
+  const visible = marketSvcs.filter(sv => pbCat === "All" || sv.category === pbCat);
+  const groups = [];
+  const rets = visible.filter(sv => sv.type === "Retainer");
+  if (rets.length) groups.push(["Retainers", rets]);
+  for (const c of [...new Set(visible.filter(sv => sv.type !== "Retainer").map(sv => sv.category || "Other"))]) {
+    groups.push([c + " · Ad hoc", visible.filter(sv => sv.type !== "Retainer" && (sv.category || "Other") === c)]);
+  }
+  if (!visible.length) h += `<div class="pbempty">No services for this market or filter yet${me.role === "admin" ? " — set a service's Market in the Data Bank to show it here" : ""}.</div>`;
+
+  for (const [label, list] of groups) {
+    h += `<div class="pblbl" style="margin:14px 0 7px">${esc(label)}</div>`;
+    for (const sv of list) {
+      const on = svcInProposal(sv.id);
+      if (svcThin(sv) && me.role === "admin") {
+        h += `<div class="pbsvc" style="opacity:.6"><div class="pbsvchd" style="cursor:default"><span class="pbcbx"></span>
+          <span class="pbsvcnm" style="color:var(--pb-subtle)">${esc(sv.title)}</span>
+          <span class="pbsvcmeta" style="color:var(--pb-warn-ink)">⚠ Content not ready — hidden from members</span></div></div>`;
+        continue;
+      }
+      const gi = editedSections.findIndex(g => g.svcId === sv.id);
+      const g = editedSections[gi];
+      const hasR2 = (sv.sections || []).some(x => x.route === "2");
+      const routeSecs = (sv.sections || []).filter(x => (x.route === ((g && g.route) || "1") || x.route === "both") && x.content);
+      h += `<div class="pbsvc ${on ? "on" : ""}">
+        <div class="pbsvchd" onclick="canvasToggleSvc('${sv.id}')">
+          <span class="pbcbx ${on ? "on" : ""}">${on ? "✓" : ""}</span>
+          <span class="pbsvcnm">${esc(sv.title)}</span>
+          <span class="pbsvcmeta">${on && g ? g.sections.length + " of " + routeSecs.length + " sections" : svcSectionCount(sv) + " sections"}</span>
+          ${on && hasR2 ? `<span class="pbroutes" onclick="event.stopPropagation()">
+            <button class="pbrt ${(g && g.route) !== "2" ? "on" : ""}" onclick="canvasSetRoute('${sv.id}','1')">Detailed</button>
+            <button class="pbrt ${(g && g.route) === "2" ? "on" : ""}" onclick="canvasSetRoute('${sv.id}','2')">Simple</button></span>` : ""}
+        </div>`;
+      if (on && g) {
+        h += `<div class="pbsvcbd">`;
+        for (const sec of routeSecs) {
+          const inc = g.sections.some(x => x.id === sec.id);
+          h += `<div class="pbsecline ${sec.addon ? "addon" : ""}" onclick="canvasToggleSection('${sv.id}','${sec.id}')" style="cursor:pointer">
+            <span class="pbcbx ${inc ? "on" : ""}" style="width:15px;height:15px;font-size:9px">${inc ? "✓" : ""}</span>
+            <span style="${inc ? "" : "color:var(--pb-subtle);"}">${esc(sec.title)}</span>
+            ${sec.addon ? `<span class="pbbadge">ADD ON</span>` : ""}</div>`;
+        }
+        if (sv.sla) {
+          h += `<div class="pbsecline" onclick="canvasToggleSla(${gi})" style="cursor:pointer;border-top:1px dashed var(--pb-div);margin-top:5px;padding-top:8px">
+            <span class="pbcbx ${g.sla ? "on" : ""}" style="width:15px;height:15px;font-size:9px">${g.sla ? "✓" : ""}</span>
+            <span>Include Service Level Agreement</span><span class="pbbadge g">SLA</span></div>`;
+        }
+        h += `</div>`;
+      }
+      h += `</div>`;
+    }
+  }
+  const nSecs = editedSections.reduce((a, g) => a + g.sections.length, 0);
+  h += `<div class="pbusedin" style="margin-top:14px"><b>${editedSections.length} service${editedSections.length === 1 ? "" : "s"}</b> · ${nSecs} sections</div>`;
+  return h;
+}
+
+// ── 03 CONTENT ───────────────────────────────────────────────
+/* A section left out in step 02 can be put back here. Before, it could
+   not: you had to return to Services, and re-ticking the service reset
+   every edit you had made. */
+function droppedSections(gi) {
+  const g = editedSections[gi]; if (!g) return [];
+  const sv = data.services.find(s => s.id === g.svcId); if (!sv) return [];
+  return (sv.sections || []).filter(x => (x.route === (g.route || "1") || x.route === "both") && x.content && !g.sections.some(y => y.id === x.id));
+}
+function restoreSection(gi, secId) {
+  const g = editedSections[gi]; if (!g) return;
+  const sv = data.services.find(s => s.id === g.svcId); if (!sv) return;
+  const sec = (sv.sections || []).find(x => x.id === secId); if (!sec) return;
+  g.sections.push({ id: sec.id, title: sec.title, addon: !!sec.addon, editedContent: sec.content });
+  autoSaveDraft(); render();
+}
+function panelContent() {
+  let h = panelHead("Step 03", "Content", "Edits here affect this proposal only. The Data Bank stays untouched.",
+    backBtn("services", "Services") + nextBtn("pricing", "Next: Pricing"));
+  if (!editedSections.length) return h + `<div class="pbempty">No services selected yet — go to <b>02 Services</b> first.</div>`;
+  editedSections.forEach((g, gi) => {
+    const dropped = droppedSections(gi);
+    h += `<div class="pbcard"><div class="pbcardhd"><h3>${esc(g.svcTitle)}</h3><span class="cnt">${g.sections.length} sections</span></div><div class="pbcardbd">`;
+    g.sections.forEach((sec, si) => { h += sectionCardHtml(gi, si, sec); });
+    for (const d of dropped) {
+      h += `<div class="pbtrow off"><span class="tn">${esc(d.title)}</span>${d.addon ? `<span class="pbbadge">ADD ON</span>` : ""}
+        <span class="pbbadge">not included</span>
+        <button class="pbbtn pbbtn-sm" onclick="restoreSection(${gi},'${d.id}')">Include</button></div>`;
+    }
+    if (g.sla) {
+      const slaKey = "sla-" + gi;
+      const isEd = pbEditingId === slaKey;
+      h += `<div class="pbsec ${isEd ? "open" : ""}"><div class="pbsechd">
+        <span class="pbstitle" style="border:none">Service Level Agreement</span>
+        <button class="pbbtn pbbtn-sm" onclick="pbEditingId=${isEd ? "null" : "'" + slaKey + "'"};render()">${isEd ? "Close" : "Edit"}</button></div>`;
+      if (isEd) h += `<div class="pbsecbd">${richEditorHtml("edsla:" + gi, g.sla)}</div>`;
+      h += `</div>`;
+    }
+    h += `</div></div>`;
+  });
+  return h;
+}
+
+// ── 04 PRICING ───────────────────────────────────────────────
+/* The amount used to be one free-text box. Typed slightly differently,
+   every total silently vanished. It is now currency (once, for the whole
+   proposal) + a number + how it is billed, and `amount` — the string the
+   Word document actually prints — is composed from those three. The
+   generator is untouched. */
+const PB_CURRENCIES = [["INR", "₹ INR"], ["USD", "$ USD"], ["GBP", "£ GBP"], ["EUR", "€ EUR"], ["AED", "AED"]];
+const PB_UNITS = [["", "one time"], [" /month", "/ month"], [" /year", "/ year"], [" /video", "/ video"], [" /day", "/ day"]];
+
+function composeAmount(item) {
+  if (item.num === "" || item.num == null) return "";
+  const n = parseInt(String(item.num).replace(/[^\d]/g, ""), 10);
+  if (!isFinite(n)) return "";
+  return fmtMoney(n, pbCurrency) + (item.unit || "");
+}
+function syncAmount(i) {
+  const it = pricingItems[i]; if (!it) return;
+  it.amount = composeAmount(it);
+}
+function setPriceNum(i, v) { pricingItems[i].num = v; syncAmount(i); autoSaveDraft(); render(); }
+function setPriceUnit(i, v) { pricingItems[i].unit = v; syncAmount(i); autoSaveDraft(); render(); }
+function setCurrency(c) {
+  pbCurrency = c;
+  pricingItems.forEach((_, i) => syncAmount(i));
+  autoSaveDraft(); render();
+}
+/* Old drafts, and lines created before this change, carry only the free
+   text. Read it once into the structured fields; anything unreadable is
+   shown as a missing amount, which is what it already was. */
+function migratePricingItems() {
+  let cur = null;
+  for (const it of pricingItems) {
+    if (it.num !== undefined && it.num !== null && it.num !== "") continue;
+    const a = it.amount ? parseAmount(it.amount) : null;
+    if (a) { it.num = String(a.v); it.unit = a.unit || ""; if (!cur) cur = a.cur; }
+    else { it.num = ""; it.unit = it.unit || ""; }
+  }
+  if (cur) pbCurrency = cur;
+  pricingItems.forEach((_, i) => syncAmount(i));
+}
+function panelPricing() {
+  migratePricingItems();
+  let h = panelHead("Step 04", "Pricing", "Line names come from your services — rename them freely. Amounts are pre-filled from the rate card.",
+    backBtn("content", "Content") + nextBtn("terms", "Next: Terms"));
+  h += `<div class="pbcard"><div class="pbcardbd">`;
+  h += `<div style="margin-bottom:14px"><label class="pbf-lbl">Currency — the whole proposal</label><div class="pbchz">
+    ${PB_CURRENCIES.map(([k, l]) => `<button class="pbch sm ${pbCurrency === k ? "on" : ""}" onclick="setCurrency('${k}')">${l}</button>`).join("")}
+  </div></div>`;
+  if (!pricingItems.length) h += `<div class="pbempty">Rows appear when you add services — or add one manually below.</div>`;
+  else h += `<div class="pbpr"><span class="pbprhd">Line</span><span class="pbprhd">Amount</span><span class="pbprhd">Billed</span><span></span></div>`;
+  pricingItems.forEach((item, i) => {
+    const missing = !item.num;
+    h += `<div class="pbpr">
+      <input class="pbfld priceTitle" value="${esc(item.title)}" placeholder="e.g. One Time Setup — Social Media" oninput="pricingItems[${i}].title=this.value" onchange="autoSaveDraft();render()"/>
+      <input class="pbfld" inputmode="numeric" value="${esc(item.num || "")}" placeholder="—" style="${missing ? "border-color:#e8b56a;background:#fffaf3" : ""}" onchange="setPriceNum(${i},this.value)"/>
+      <select class="pbfld" onchange="setPriceUnit(${i},this.value)">
+        ${PB_UNITS.map(([k, l]) => `<option value="${k}"${(item.unit || "") === k ? " selected" : ""}>${l}</option>`).join("")}
+      </select>
+      <button class="pbx" title="Delete this line" onclick="deletePricingLine(${i})">✕</button></div>`;
+    if (item.range && me.role === "admin") h += `<div class="pbhint" style="margin:-2px 0 8px">Rate card guideline: ${esc(item.range)}</div>`;
+  });
+  h += `<button class="pbaddrow" onclick="addPricingLine()">＋ Add a line — one-time setup, onboarding, anything extra</button>`;
+  h += `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--pb-div)">
+    <label class="pbf-lbl">Tax</label><div class="pbchz">
+      <button class="pbch sm ${taxRate === 18 ? "on" : ""}" onclick="taxRate=18;autoSaveDraft();render()">GST 18%</button>
+      <button class="pbch sm ${taxRate === 5 ? "on" : ""}" onclick="taxRate=5;autoSaveDraft();render()">GST 5%</button>
+      <button class="pbch sm ${taxRate === 0 ? "on" : ""}" onclick="taxRate=0;autoSaveDraft();render()">No tax</button></div>`;
+  h += `<div id="pricingTotals" style="margin-top:14px">${pricingTotalsHtml()}</div></div>`;
+  h += `</div></div>`;
+  return h;
+}
+function pricingTotalsHtml() {
+  const missing = pricingItems.filter(p => !p.amount || !p.amount.trim()).length;
+  const groups = pricingTotalGroups();
+  let h = "";
+  if (groups) {
+    for (const g of groups) {
+      const lbl = groups.length > 1 ? " — " + unitLabel(g.unit) : "";
+      if (taxRate > 0) {
+        const tax = Math.round(g.sum * taxRate / 100);
+        h += `<div class="pbtot"><span>Subtotal${lbl}</span><b>${fmtMoney(g.sum, g.cur)}${g.unit || ""}</b></div>`;
+        h += `<div class="pbtot"><span>GST ${taxRate}%${lbl}</span><b>${fmtMoney(tax, g.cur)}</b></div>`;
+        h += `<div class="pbtot big"><span>Total${lbl}</span><b>${fmtMoney(g.sum + tax, g.cur)}${g.unit || ""}</b></div>`;
+      } else {
+        h += `<div class="pbtot big"><span>Total${lbl}</span><b>${fmtMoney(g.sum, g.cur)}${g.unit || ""}</b></div>`;
+      }
+    }
+  }
+  if (missing) h += `<div class="pbhint" style="text-align:right;padding-right:36px;color:var(--pb-warn-ink)">${missing} line${missing > 1 ? "s" : ""} with no amount — left out of this total</div>`;
+  return h;
+}
+
+// ── 05 TERMS & PAYMENT ───────────────────────────────────────
+/* The first payment term included becomes “Payment Model” on the cover.
+   That has always been true and has never been visible. */
+function moveEdited(list, i, d) {
+  const j = i + d; if (j < 0 || j >= list.length) return;
+  const t = list[i]; list[i] = list[j]; list[j] = t;
+  autoSaveDraft(); render();
+}
+function panelTerms() {
+  let h = panelHead("Step 05", "Terms &amp; Payment", "What ships with the proposal. Reorder to set the order they appear in.",
+    backBtn("pricing", "Pricing") + nextBtn("review", "Next: Review"));
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Terms &amp; conditions</h3><span class="cnt">${editedClauses.length} of ${data.commonSections.length} included</span></div><div class="pbcardbd">`;
+  editedClauses.forEach((c, idx) => {
+    const ed = pbEditingId === "cl-" + idx;
+    h += `<div class="pbtrow">
+      <span style="display:flex;flex-direction:column;width:14px">
+        <button class="pbgrip" title="Move up" onclick="moveEdited(editedClauses,${idx},-1)">▲</button>
+        <button class="pbgrip" title="Move down" onclick="moveEdited(editedClauses,${idx},1)">▼</button></span>
+      <span class="pbcbx on">✓</span><span class="tn">${esc(c.title)}</span>
+      <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'cl-" + idx + "'"};render()">${ed ? "Close" : "Edit for this proposal"}</button>
+      <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="deleteEditedClause(${idx})">Remove</button></div>`;
+    if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edcl:" + idx, c.editedContent)}</div>`;
+  });
+  for (const c of data.commonSections) {
+    if (editedClauses.some(x => x.id === c.id)) continue;
+    h += `<div class="pbtrow off"><span style="width:14px"></span><span class="pbcbx"></span><span class="tn">${esc(c.title)}</span>
+      <button class="pbbtn pbbtn-sm" onclick="canvasToggleClause('${c.id}')">Include</button></div>`;
+  }
+  h += `</div></div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Payment terms</h3><span class="cnt"${editedPayment.length ? "" : ` style="color:var(--pb-warn-ink);font-weight:700"`}>${editedPayment.length ? editedPayment.length + " included" : "none included"}</span></div><div class="pbcardbd">`;
+  if (!editedPayment.length) {
+    h += `<div style="background:var(--pb-note-bg);border-left:3px solid #e0b64a;padding:10px 12px;font-size:12px;color:var(--pb-note-ink);border-radius:0 6px 6px 0;margin-bottom:12px">
+      <b>Nothing is included.</b> This proposal will go out with no payment terms, and the cover's Payment Model will read TBD.</div>`;
+  }
+  editedPayment.forEach((p, idx) => {
+    const ed = pbEditingId === "pt-" + idx;
+    h += `<div class="pbtrow">
+      <span style="display:flex;flex-direction:column;width:14px">
+        <button class="pbgrip" title="Move up" onclick="moveEdited(editedPayment,${idx},-1)">▲</button>
+        <button class="pbgrip" title="Move down" onclick="moveEdited(editedPayment,${idx},1)">▼</button></span>
+      <span class="pbcbx on">✓</span><span class="tn">${esc(p.title)}</span>
+      ${idx === 0 ? `<span class="pbcover">SHOWS ON COVER</span>` : ""}
+      <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'pt-" + idx + "'"};render()">${ed ? "Close" : "Edit for this proposal"}</button>
+      <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="deleteEditedPaymentTerm(${idx})">Remove</button></div>`;
+    if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edpt:" + idx, p.editedContent)}</div>`;
+  });
+  for (const p of data.paymentTerms) {
+    if (editedPayment.some(x => x.id === p.id)) continue;
+    h += `<div class="pbtrow off"><span style="width:14px"></span><span class="pbcbx"></span><span class="tn">${esc(p.title)}</span>
+      ${!editedPayment.length ? `<span class="pbcover">WOULD SHOW ON COVER</span>` : ""}
+      <button class="pbbtn pbbtn-sm" onclick="canvasTogglePayment('${p.id}')">Include</button></div>`;
+  }
+  h += `</div></div>`;
+  return h;
+}
+
+// ── 06 REVIEW ────────────────────────────────────────────────
+const PB_FIX_STEP = { "service": "services", "Client": "client", "Terms": "terms", "Payment": "terms", "amount": "pricing", "pricing": "pricing" };
+function fixStepFor(txt) {
+  if (/service|section/i.test(txt)) return ["services", "02 Services"];
+  if (/client/i.test(txt)) return ["client", "01 Client"];
+  if (/amount|pricing/i.test(txt)) return ["pricing", "04 Pricing"];
+  return ["terms", "05 Terms"];
+}
+function panelReview() {
+  let h = panelHead("Step 06", "Review", "Everything that is not ready, and one click to go fix it.", backBtn("terms", "Terms"));
+  h += `<div class="pbcard"><div style="padding:2px 0">`;
+  for (const c of readinessList()) {
+    const [key, label] = fixStepFor(c.txt);
+    h += `<div class="pbrd ${c.ok ? "ok" : "no"}"><span class="ic">${c.ok ? "✓" : "!"}</span><span>${esc(c.txt)}</span>
+      ${c.ok ? "" : `<button class="pbbtn pbbtn-sm go" onclick="pbTab='${key}';pbEditingId=null;render()">Fix in ${label}</button>`}</div>`;
+  }
+  h += `</div></div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>The document</h3></div><div class="pbcardbd">
+    <div class="pbg2">
+      <div><label class="pbf-lbl">File name</label><input class="pbfld" value="${esc(docFileName())}" onchange="docOpts.fileName=this.value;autoSaveDraft();render()"/></div>
+      <div><label class="pbf-lbl">Billing entity</label><input class="pbfld" value="${esc(docOpts.entity)}" onchange="docOpts.entity=this.value;autoSaveDraft();render()"/></div>
+    </div>
+    <div class="pbg2 pbmt">
+      <div><label class="pbf-lbl">Proposal validity</label><input class="pbfld" value="${esc(docOpts.validity)}" onchange="docOpts.validity=this.value;autoSaveDraft();render()"/></div>
+      <div></div>
+    </div></div></div>`;
+
+  const bad = readinessList().filter(c => !c.ok).length;
+  h += `<button class="pbbigbtn" ${generating ? "disabled" : ""} onclick="canvasGenerate()">${generating ? "Generating…" : "Generate Word Proposal ↓"}</button>`;
+  h += `<div class="pbhint" style="text-align:center;margin-top:9px">${bad ? bad + " thing" + (bad > 1 ? "s are" : " is") + " missing. You'll be asked to confirm before it downloads." : "The proposal is also saved to your drafts."}</div>`;
+  return h;
+}
+
 </script>
 </body>
 </html>
