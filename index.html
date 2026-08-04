@@ -23111,7 +23111,7 @@ function renderClauseDetail(selKey, list, updateFnName, deleteFnName) {
    gives up goes to the document preview, which is the thing you are
    watching form. Pricing is the exception — four columns, and you are
    reading a table against a table. */
-const PB_ENTRY_W = { client: 380, services: 340, content: 340, pricing: 560, terms: 340, review: 380 };
+const PB_ENTRY_W = { client: 380, services: 340, content: 560, pricing: 560, terms: 340, review: 380 };
 function entryWidth() { return PB_ENTRY_W[pbTab] || 380; }
 function entryNarrow() { return entryWidth() <= 380; }
 
