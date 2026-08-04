@@ -341,6 +341,26 @@ select.pbfld{background:var(--pb-canvas) url("data:image/svg+xml;utf8,<svg xmlns
 .pbstat{font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 6px;border-radius:4px;
   background:rgba(255,255,255,.16);color:rgba(255,255,255,.8);flex:none}
 
+
+/* the account menu, matching the calendar's .acmenu / .brow */
+.pbacmail{font-size:11px;color:var(--pb-subtle);padding:6px 10px 8px;word-break:break-all;line-height:1.5}
+.pbmrow{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;
+  font-size:13px;color:var(--pb-text);width:100%;border:none;background:transparent;
+  font-family:inherit;text-align:left}
+.pbmrow:hover{background:rgba(13,13,13,.05)}
+.pbmrow i.ti{font-size:16px;color:var(--pb-muted);flex:none}
+.pbmrow .bnm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+
+/* a collapsible card header */
+.pbfold{width:100%;border:none;background:transparent;font-family:inherit;cursor:pointer;text-align:left}
+.pbfold i.ti{font-size:15px;color:var(--pb-subtle);flex:none}
+.pbfold:hover h3{color:var(--pb-accent)}
+/* Back / Next stay on the title row */
+.pbstephead{flex-wrap:nowrap}
+.pbstephead h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbstepnav{flex:none;white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -21773,6 +21793,11 @@ function parseContentToBullets(text) {
 }
 
 async function handleGenerate() {
+  /* allocate the serial and freeze the version before a single paragraph
+     is written, so the file carries the number it is filed under */
+  pendingSerial = "";
+  try { const iss = await issueVersion(docFileName()); if (iss) pendingSerial = iss.serial_label; }
+  catch (e) { console.error(e); }
   generating = true;
   render();
 
@@ -22032,7 +22057,6 @@ async function handleGenerate() {
               p("Authorised Signatory", { sz: 18, c: LGREY }),
               p("Communication Crafts (CCT Digisol Pvt Ltd)", { sz: 18, c: LGREY }),
               p("705 Times Square Grand, Sindhu Bhavan Rd, Ahmedabad", { sz: 18, c: LGREY }),
-              p(nextSerialLabel(), { sz: 14, c: LGREY }),
             ] }),
           new TableCell({ borders: nob, width: { size: hw, type: WidthType.DXA }, margins: { ...cm, top: 800 },
             children: [
@@ -22062,7 +22086,11 @@ async function handleGenerate() {
         {
           properties: { page: { size: { width: PW, height: PH }, margin: { top: M, right: M, bottom: M, left: M } } },
           headers: { default: new Header({ children: [] }) },
-          footers: { default: new Footer({ children: [] }) },
+          footers: { default: new Footer({ children: [
+            new Paragraph({ alignment: AlignmentType.RIGHT, children: [
+              new TextRun({ text: pendingSerial || "", font: "Arial", size: 14, color: LGREY })
+            ] })
+          ] }) },
           children: [
             sp(300),
             new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [
@@ -22156,7 +22184,6 @@ async function handleGenerate() {
     const a = document.createElement("a");
     a.href = url;
     a.download = docFileName();
-    setTimeout(() => issueVersion(a.download), 400);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -22906,6 +22933,7 @@ function dbSidebar() {
       }
     }
     h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:12px" onclick="addService()">+ New service</button>`;
+    h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:6px" onclick="addCategory()">+ New category</button>`;
     h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:6px" onclick="openServiceWizard()">⚡ New from paste</button>`;
     h += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--pb-div);display:flex;gap:10px;justify-content:center">
       <button onclick="exportCsvTemplate()" title="Optional spreadsheet backup" style="border:none;background:none;color:var(--pb-faint);font-size:10px;cursor:pointer;text-decoration:underline">Backup CSV</button>
@@ -23773,12 +23801,15 @@ function panelPricing() {
   h += `<div class="pbabove">
     <div><label class="pbf-lbl">Currency</label>
       ${segControl(PB_CURRENCIES, pbCurrency, "setCurrency")}</div>`;
-  if (pbMarket !== "INTL") {
+  /* GST belongs to an Indian invoice in rupees. Either the market or the
+     currency being foreign takes the control away entirely — leaving it
+     visible but ignored is how a wrong number reaches a client. */
+  if (pbMarket !== "INTL" && pbCurrency === "INR") {
     h += `<div><label class="pbf-lbl">Tax</label>
       ${segControl([["18", "GST 18%"], ["5", "GST 5%"], ["0", "No GST"]], String(taxRate), "setTax")}</div>`;
   } else {
     h += `<div><label class="pbf-lbl">Tax</label>
-      <div style="height:36px;display:flex;align-items:center;font-size:12.5px;color:var(--pb-subtle)">No GST on international proposals</div></div>`;
+      <div style="height:36px;display:flex;align-items:center;font-size:12.5px;color:var(--pb-subtle)">No GST on ${pbCurrency !== "INR" ? esc(pbCurrency) + " pricing" : "international proposals"}</div></div>`;
   }
   h += `</div>`;
 
@@ -24042,6 +24073,258 @@ function pbSidebar() {
   h += `</div>`;
   return h;
 }
+
+
+/* the serial this file is being filed under, set by handleGenerate just
+   before the document is built */
+let pendingSerial = "";
+
+/* ── THE ACCOUNT MENU, as agreed on the mockup ────────────────────────
+   The live one was still the round-1 version: no email, no icons, no
+   way to change a password. This is the calendar's .acct block —
+   email at the top, a separator, the two doors out, a separator, then
+   the two things that act on your own account. */
+function acctBlock() {
+  const nm = (me.email || "").split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const role = me.role === "admin" ? "Admin" : "Member";
+  let h = `<div class="pbacct">`;
+  if (acctMenuOpen) {
+    h += `<div class="pbmenu">
+      <div class="pbacmail">${esc(me.email || "")}</div>
+      <div class="pbbpsep"></div>
+      <button class="pbmrow" onclick="window.open('${PB_PLATFORM_URL}','_blank')">
+        <i class="ti ti-users"></i><span class="bnm">People &amp; access</span>
+        <i class="ti ti-external-link" style="margin-left:auto;font-size:12px;opacity:.5"></i></button>
+      <button class="pbmrow" onclick="window.open('https://communicationcraftshq.github.io/BrandCalendar/','_blank')">
+        <i class="ti ti-calendar"></i><span class="bnm">Marketing Calendar</span>
+        <i class="ti ti-external-link" style="margin-left:auto;font-size:12px;opacity:.5"></i></button>
+      <div class="pbbpsep"></div>
+      <button class="pbmrow" onclick="changePassword()"><i class="ti ti-key"></i><span class="bnm">Change password</span></button>
+      <button class="pbmrow" onclick="doLogout()"><i class="ti ti-logout"></i><span class="bnm">Sign out</span></button>
+    </div>`;
+  }
+  h += `<button class="pbacctrig" onclick="acctMenuOpen=!acctMenuOpen;render()">
+    <span class="pbav">${esc((nm[0] || "?").toUpperCase())}</span>
+    <span style="display:flex;flex-direction:column;flex:1;min-width:0">
+      <span class="pbacnm">${esc(nm || me.email || "")}</span>
+      <span class="pbacrole">${role}</span>
+    </span>
+    <i class="ti ti-chevron-${acctMenuOpen ? "down" : "up"}" style="color:var(--pb-subtle);font-size:14px;flex:none"></i>
+  </button></div>`;
+  return h;
+}
+
+/* Supabase changes the password of whoever is signed in — there is no
+   way for this to touch anybody else's account. */
+async function changePassword() {
+  acctMenuOpen = false; render();
+  const a = prompt("New password (at least 8 characters)");
+  if (!a) return;
+  if (a.length < 8) { flash("Too short — use at least 8 characters"); return; }
+  const b = prompt("Type it once more");
+  if (a !== b) { flash("They did not match — nothing changed"); return; }
+  try {
+    const { error } = await sbc().auth.updateUser({ password: a });
+    if (error) throw error;
+    flash("Password changed");
+  } catch (e) { flash("Could not change it: " + e.message); }
+}
+
+/* the switcher and the account menu both close when you click away —
+   the calendar behaves this way and Chirag asked for the same */
+document.addEventListener("click", function (e) {
+  if (typeof me === "undefined" || !me || !me.role) return;
+  let dirty = false;
+  if (switcherOpen && !e.target.closest(".pbbswrap")) { switcherOpen = false; dirty = true; }
+  if (acctMenuOpen && !e.target.closest(".pbacct")) { acctMenuOpen = false; dirty = true; }
+  if (dirty) render();
+}, true);
+
+/* ════════════════════════════════════════════════════════════════════
+   THE LAST TWELVE — Chirag, 2026-08-05.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* a new proposal starts at the beginning */
+function newProposal() {
+  if (editedSections.length && JSON.stringify(builderState()) !== lastDraftSnapshot) {
+    if (!confirm("Start a new proposal? Unsaved changes to the current one will be lost.")) return;
+  }
+  pbStep = 1; pbTab = "client";
+  selectedSvcs = {}; editedSections = []; editedClauses = []; editedPayment = []; pricingItems = [];
+  client = { name: "", signingAuthority: "", designation: "", address: "", contractDuration: "12 Calendar Months", startDate: "", endDate: "" };
+  currentDraftId = null; lastDraftSnapshot = ""; pbEditingId = null; taxRate = 18;
+  pbMarket = "IND"; pbCurrency = "INR"; switcherOpen = false;
+  initSelections(); seedDefaultClauses(); render();
+}
+
+/* GST is an Indian tax on an Indian invoice. Charging it on a dollar
+   price is simply wrong, so the control disappears with the currency,
+   not only with the market. */
+function gstApplies() { return pbMarket !== "INTL" && pbCurrency === "INR" && taxRate > 0; }
+function setCurrency(c) {
+  pbCurrency = c;
+  if (c !== "INR") taxRate = 0;
+  else if (pbMarket !== "INTL" && !taxRate) taxRate = 18;
+  pricingItems.forEach((_, i) => syncAmount(i));
+  autoSaveDraft(); render();
+}
+
+/* Back and Next belong on the title row. Short labels keep them there
+   even in the 340px steps. */
+function backBtn(key, label) { return `<button class="pbbtn pbbtn-sm" title="Back to ${label}" onclick="pbTab='${key}';pbEditingId=null;render()">← Back</button>`; }
+function nextBtn(key, label) { return `<button class="pbbtn pbbtn-sm pbbtn-p" title="${label}" onclick="pbTab='${key}';pbEditingId=null;render()">Next →</button>`; }
+
+/* ══ DATA BANK ══════════════════════════════════════════════════════ */
+let dbOpenSection = {};        /* which of Variations / Cost factors is open */
+function toggleDbBox(k) { dbOpenSection[k] = !dbOpenSection[k]; render(); }
+
+function addCategory() {
+  const name = (prompt("Name the new category") || "").trim();
+  if (!name) return;
+  const svc = data.services.find(s => s.id === dbSel.services);
+  if (svc) { svc.category = name; catFilter = name; saveData(); render(); flash("“" + name + "” added — this service is now in it"); }
+  else { addService(); const s2 = data.services[data.services.length - 1]; s2.category = name; catFilter = name; saveData(); render(); }
+}
+
+function saveSection(svcId, secId) { saveData(); render(); flash("Saved"); }
+function confirmDeleteSection(svcId, secId, title) {
+  if (!confirm("Delete “" + (title || "this section") + "”?")) return;
+  if (!confirm("This cannot be undone. Delete it?")) return;
+  data.services = data.services.map(s => s.id === svcId ? { ...s, sections: s.sections.filter(x => x.id !== secId) } : s);
+  saveData(); render(); flash("Deleted");
+}
+function confirmClearSla(svcId) {
+  if (!confirm("Remove the service level agreement?")) return;
+  if (!confirm("This cannot be undone. Remove it?")) return;
+  const svc = data.services.find(s => s.id === svcId); if (!svc) return;
+  svc.sla = ""; saveData(); render(); flash("Removed");
+}
+
+function renderSvcDetail() {
+  const svc = data.services.find(s => s.id === dbSel.services);
+  if (!svc) return `<div class="pbempty" style="margin-top:40px">Select a service on the left, or add a new one.</div>`;
+  const cats = [...new Set(data.services.map(s => s.category).filter(Boolean))].sort();
+  if (svc.category && !cats.includes(svc.category)) cats.push(svc.category);
+
+  /* one row for the title. The eyebrow above it was a second line saying
+     the same things the fields below already say. */
+  let h = `<div class="pbedhead">
+    <div style="flex:1;min-width:240px">
+      <input class="pbttl" value="${esc(svc.title)}" onchange="updateService('${svc.id}','title',this.value)"/>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:4px">
+      <button class="pbbtn pbbtn-sm" onclick="duplicateService('${svc.id}')">Duplicate</button>
+      <button class="pbbtn pbbtn-sm pbbtn-d" onclick="deleteService('${svc.id}')">Delete</button>
+    </div></div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Details</h3></div><div class="pbcardbd">`;
+  h += `<div class="pbg3">
+    <div><label class="pbf-lbl">Category</label>
+      <select class="pbfld" onchange="updateService('${svc.id}','category',this.value)">
+        <option value=""${!svc.category ? " selected" : ""}>—</option>
+        ${cats.map(c => `<option${svc.category === c ? " selected" : ""}>${esc(c)}</option>`).join("")}
+      </select></div>
+    <div><label class="pbf-lbl">Type</label><div class="pbchz">
+      <button class="pbch ${svc.type === "Retainer" ? "on" : ""}" onclick="updateService('${svc.id}','type','Retainer')">Retainer</button>
+      <button class="pbch ${svc.type === "Ad Hoc" ? "on" : ""}" onclick="updateService('${svc.id}','type','Ad Hoc')">Ad Hoc</button>
+    </div></div>
+    <div><label class="pbf-lbl">Market</label><div class="pbchz">
+      ${PB_MARKETS.map(([k, l]) => `<button class="pbch ${svc.market === k ? "on" : ""}" onclick="updateService('${svc.id}','market','${k}')">${l}</button>`).join("")}
+    </div></div>
+  </div>`;
+  /* heading on the left, pricing range on the right */
+  h += `<div class="pbg2 pbmt">
+    <div><label class="pbf-lbl">Heading in the Word document</label>
+      <input class="pbfld" value="${esc(svc.sectionTitle || "")}" onchange="updateService('${svc.id}','sectionTitle',this.value)"/></div>
+    <div><label class="pbf-lbl">Pricing range</label>
+      <input class="pbfld" value="${esc(svc.pricing || "")}" placeholder="e.g. Rs 75,000 to Rs 1,55,000 / month" onchange="updateService('${svc.id}','pricing',this.value)"/></div>
+  </div></div></div>`;
+
+  /* Variations and Cost factors are reference, not the daily job — shut
+     until you want them */
+  const vr = varRows(svc), cf = cfRows(svc);
+  const box = (key, title, count, body) => {
+    const open = !!dbOpenSection[key];
+    return `<div class="pbcard"><button class="pbcardhd pbfold" onclick="toggleDbBox('${key}')">
+        <i class="ti ti-chevron-${open ? "down" : "right"}"></i><h3>${title}</h3><span class="cnt">${count}</span>
+      </button>${open ? `<div class="pbcardbd">${body()}</div>` : ""}</div>`;
+  };
+  h += box("var-" + svc.id, "Variations", vr.length, () => {
+    let b = vr.length ? `<div class="pbrr" style="margin-bottom:8px"><span class="pbf-lbl" style="flex:1;margin:0">Variation</span><span class="pbf-lbl" style="flex:1;margin:0">Team allocation</span><span style="width:30px"></span></div>` : "";
+    vr.forEach((r, i) => {
+      b += `<div class="pbrr">
+        <input class="pbfld" value="${esc(r.v)}" onchange="setVar('${svc.id}',${i},'v',this.value)"/>
+        <input class="pbfld" value="${esc(r.t)}" onchange="setVar('${svc.id}',${i},'t',this.value)"/>
+        <button class="pbxbtn" title="Remove" onclick="delVar('${svc.id}',${i})">✕</button></div>`;
+    });
+    return b + `<button class="pbaddrow" onclick="addVar('${svc.id}')">+ Add variation</button>`;
+  });
+  h += box("cf-" + svc.id, "Cost factors", cf.length, () => {
+    let b = "";
+    cf.forEach((r, i) => {
+      b += `<div class="pbrr">
+        <input class="pbfld" value="${esc(r)}" onchange="setCf('${svc.id}',${i},this.value)"/>
+        <button class="pbxbtn" title="Remove" onclick="delCf('${svc.id}',${i})">✕</button></div>`;
+    });
+    return b + `<button class="pbaddrow" onclick="addCf('${svc.id}')">+ Add cost factor</button>`;
+  });
+
+  /* every section open and editable — no Edit button, no reordering */
+  const hasR2 = (svc.sections || []).some(s => s.route === "2");
+  const currentRoute = dbRouteView[svc.id] || "1";
+  const routeSecs = (svc.sections || []).filter(s => s.route === currentRoute || s.route === "both");
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Proposal sections</h3><span class="cnt">${routeSecs.length}</span><span class="sp">`;
+  if (hasR2) h += segControl([["1", "Route 1 — Detailed"], ["2", "Route 2 — Simple"]], currentRoute, "setDbRoute.bind(null,'" + svc.id + "')");
+  h += `<button class="pbbtn pbbtn-sm" onclick="openPasteModal('newsec','${svc.id}')">⚡ Paste content</button>
+    <button class="pbbtn pbbtn-sm pbbtn-p" onclick="addSection('${svc.id}')">+ Section</button>
+  </span></div><div class="pbcardbd">`;
+  if (!routeSecs.length) h += `<div class="pbempty">No sections for this route yet.</div>`;
+  for (const sec of routeSecs) {
+    h += `<div class="pbsec open"><div class="pbsechd">
+      <input class="pbstitle" value="${esc(sec.title)}" onchange="updateSection('${svc.id}','${sec.id}','title',this.value)"/>
+      <button class="pbtg ${sec.addon ? "on" : ""}" onclick="toggleAddon('${svc.id}','${sec.id}')"><span class="knob"></span>ADD ON</button>
+      <button class="pbbtn pbbtn-sm" onclick="saveSection('${svc.id}','${sec.id}')">Save</button>
+      <button class="pbbtn pbbtn-sm pbbtn-d" onclick="confirmDeleteSection('${svc.id}','${sec.id}','${esc((sec.title || "").replace(/'/g, ""))}')">Delete</button>
+    </div><div class="pbsecbd">${richEditorHtml("dbsec:" + svc.id + ":" + sec.id, sec.content)}</div></div>`;
+  }
+  h += `</div></div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Service level agreement</h3>`;
+  if (svc.sla) h += `<span class="sp"><button class="pbbtn pbbtn-sm" onclick="saveSection('${svc.id}','sla')">Save</button>
+    <button class="pbbtn pbbtn-sm pbbtn-d" onclick="confirmClearSla('${svc.id}')">Delete</button></span>`;
+  h += `</div><div class="pbcardbd">`;
+  if (!svc.sla) h += `<div class="pbempty">No SLA for this service yet.<br><button class="pbbtn pbbtn-sm" style="margin-top:10px" onclick="startSla('${svc.id}')">+ Write an SLA</button></div>`;
+  else h += richEditorHtml("dbsla:" + svc.id, svc.sla);
+  h += `</div></div>`;
+
+  h += usedInLine(svc.id);
+  return h;
+}
+function setDbRoute(svcId, r) { dbRouteView[svcId] = r; render(); }
+function startSla(svcId) {
+  const svc = data.services.find(s => s.id === svcId); if (!svc) return;
+  if (!svc.sla) svc.sla = "<div></div>";
+  saveData(); render();
+}
+
+/* the clause and payment editors lose their eyebrow line too */
+function renderClauseDetail(selKey, list, updateFnName, deleteFnName) {
+  const item = list.find(s => s.id === dbSel[selKey]);
+  const what = selKey === "common" ? "clause" : "payment term";
+  if (!item) return `<div class="pbempty" style="margin-top:40px">Select a ${what} on the left, or add a new one.</div>`;
+  const target = (selKey === "common" ? "clause:" : "payterm:") + item.id;
+  let h = `<div class="pbedhead">
+    <div style="flex:1;min-width:240px">
+      <input class="pbttl" value="${esc(item.title)}" onchange="rteSetTitle('${target}',this.value)"/>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:4px">
+      <button class="pbbtn pbbtn-sm" onclick="saveData();render();flash('Saved')">Save</button>
+      <button class="pbbtn pbbtn-sm pbbtn-d" onclick="${deleteFnName}('${item.id}')">Delete</button>
+    </div></div>`;
+  h += `<div class="pbcard"><div class="pbcardbd" style="padding:0">${richEditorHtml(target, item.content)}</div></div>`;
+  return h;
+}
+
 
 </script>
 </body>
