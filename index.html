@@ -22088,7 +22088,7 @@ async function handleGenerate() {
           headers: { default: new Header({ children: [] }) },
           footers: { default: new Footer({ children: [
             new Paragraph({ alignment: AlignmentType.RIGHT, children: [
-              new TextRun({ text: pendingSerial || "", font: "Arial", size: 14, color: LGREY })
+              new TextRun({ text: pendingSerial ? "Ref " + pendingSerial : "", font: "Arial", size: 16, color: "888888" })
             ] })
           ] }) },
           children: [
