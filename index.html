@@ -22805,19 +22805,21 @@ function dbSidebar() {
     h += `<button class="pbpill all ${catFilter === "All" ? "on" : ""}" onclick="catFilter='All';render()">All <i>${c.services}</i></button>`;
     h += `</div>`;
 
-    const list = dbFilteredServices();
-    let lastCat = null;
-    for (const s of list) {
-      const cat = s.category || "Uncategorised";
-      if (cat !== lastCat) {
-        const n = list.filter(x => (x.category || "Uncategorised") === cat).length;
-        h += `<div class="pblbl" style="margin-top:14px">${esc(cat)} · ${n}</div>`;
-        lastCat = cat;
+    /* group by category, once each — sorting retainers to the top of the
+       whole list used to break the run and repeat the heading */
+    const byCat = {};
+    for (const s of dbFilteredServices()) {
+      const c = s.category || "Uncategorised";
+      (byCat[c] = byCat[c] || []).push(s);
+    }
+    for (const cat of Object.keys(byCat).sort()) {
+      h += `<div class="pblbl" style="margin-top:14px">${esc(cat)} · ${byCat[cat].length}</div>`;
+      for (const s of byCat[cat]) {
+        const on = dbSel.services === s.id;
+        const tag = s.type === "Retainer" ? `<span class="pbtag r" title="Retainer">R</span>`
+          : s.type === "Ad Hoc" ? `<span class="pbtag a" title="Ad hoc">A</span>` : "";
+        h += `<button class="pbrow ${on ? "on" : ""}" onclick="dbSel.services='${s.id}';dbEditingSec=null;render()"><span class="nm">${esc(s.title)}</span>${tag}</button>`;
       }
-      const on = dbSel.services === s.id;
-      const tag = s.type === "Retainer" ? `<span class="pbtag r" title="Retainer">R</span>`
-        : s.type === "Ad Hoc" ? `<span class="pbtag a" title="Ad hoc">A</span>` : "";
-      h += `<button class="pbrow ${on ? "on" : ""}" onclick="dbSel.services='${s.id}';dbEditingSec=null;render()"><span class="nm">${esc(s.title)}</span>${tag}</button>`;
     }
     h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:12px" onclick="addService()">+ New service</button>`;
     h += `<button class="pbbtn pbbtn-sm" style="width:100%;margin-top:6px" onclick="openServiceWizard()">⚡ New from paste</button>`;
