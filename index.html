@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CC Proposal Bank</title>
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -305,6 +306,40 @@ select.pbfld{background:var(--pb-canvas) url("data:image/svg+xml;utf8,<svg xmlns
 .pbside{height:calc(100vh - 60px);position:sticky;top:60px;overflow:visible}
 .pbmain{max-height:calc(100vh - 60px);overflow-y:auto;scrollbar-gutter:stable}
 .pbpv-wrap{max-height:calc(100vh - 60px);overflow-y:auto}
+
+
+/* ── STAGE 3: the proposal switcher, in the dark bar ──────────────────
+   Copied from the calendar's brand switcher (.bstrig / .bpanel). Same
+   control, same panel, same place — Chirag chose it over a side-panel
+   dropdown so the side panel goes back to doing one job. */
+.pbnav{overflow:visible}
+.pbbswrap{position:relative;flex:none}
+.pbbstrig{display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:var(--pb-r-md);
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.13);color:#fff;
+  font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;max-width:300px}
+.pbbstrig:hover{background:rgba(255,255,255,.2)}
+.pbbstrig .bnm{overflow:hidden;text-overflow:ellipsis}
+.pbbpanel{position:absolute;top:44px;left:0;min-width:300px;max-height:70vh;overflow-y:auto;
+  background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+  border:1px solid rgba(255,255,255,.95);border-radius:16px;
+  box-shadow:0 18px 46px rgba(13,13,13,.18);z-index:650;padding:6px}
+.pbbphead{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--pb-subtle);padding:7px 10px 5px}
+.pbbpsep{height:1px;background:rgba(13,13,13,.07);margin:5px 6px}
+.pbbrow{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;
+  font-size:13px;color:var(--pb-text)}
+.pbbrow:hover{background:rgba(13,13,13,.05)}
+.pbbrow.on{background:var(--pb-text);color:#fff;font-weight:600}
+.pbbrow.on i.ti,.pbbrow.on .when,.pbbrow.on .pbvcount{color:rgba(255,255,255,.7)}
+.pbbrow i.ti{font-size:16px;color:var(--pb-muted);flex:none}
+.pbbrow .bnm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbbrow .when{font-size:11px;color:var(--pb-subtle);flex:none}
+.pbvcount{font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;
+  background:var(--pb-ok-bg);color:var(--pb-ok);flex:none}
+.pbserial{font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:4px;
+  background:rgba(255,255,255,.16);color:#fff;flex:none}
+.pbstat{font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 6px;border-radius:4px;
+  background:rgba(255,255,255,.16);color:rgba(255,255,255,.8);flex:none}
 
 </style>
 </head>
@@ -21997,6 +22032,7 @@ async function handleGenerate() {
               p("Authorised Signatory", { sz: 18, c: LGREY }),
               p("Communication Crafts (CCT Digisol Pvt Ltd)", { sz: 18, c: LGREY }),
               p("705 Times Square Grand, Sindhu Bhavan Rd, Ahmedabad", { sz: 18, c: LGREY }),
+              p(nextSerialLabel(), { sz: 14, c: LGREY }),
             ] }),
           new TableCell({ borders: nob, width: { size: hw, type: WidthType.DXA }, margins: { ...cm, top: 800 },
             children: [
@@ -22120,6 +22156,7 @@ async function handleGenerate() {
     const a = document.createElement("a");
     a.href = url;
     a.download = docFileName();
+    setTimeout(() => issueVersion(a.download), 400);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -22798,6 +22835,7 @@ function render() {
       ${me.role === "admin" ? `<button class="${mainTab === "bank" ? "on" : ""}" onclick="mainTab='bank';acctMenuOpen=false;render()">Data Bank</button>` : ""}
       <button class="${mainTab === "builder" ? "on" : ""}" onclick="mainTab='builder';acctMenuOpen=false;render()">Build Proposal</button>
     </span>
+    ${proposalSwitcher()}
     <div class="pbnav-right">${saveChip()}${navActions()}</div>
   </div>`;
 
@@ -23842,6 +23880,167 @@ function commercialRowsHtml() {
       <td style="border:1px solid var(--pb-div);padding:6px 9px;text-align:right">${esc(amountWithGst(p))}</td></tr>`;
   }
   return h + `</table>`;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   STAGE 3 — the proposal switcher, versions and serials.
+   The app now reads pb_proposals / pb_proposal_versions instead of the
+   flat pb_drafts table. Downloads issue a version through the database
+   function, so what a client received is kept and cannot be rewritten.
+   ════════════════════════════════════════════════════════════════════ */
+
+let versionsFor = {};      /* proposal id → its versions, newest first */
+let switcherOpen = false;
+
+/* ── reading ─────────────────────────────────────────────────────────
+   What comes back is already filtered by the database: an admin sees
+   every proposal, everyone else sees only their own. There is no
+   client-side check here on purpose — a client-side check is a
+   suggestion, not a rule. */
+async function loadCloudDrafts() {
+  try {
+    const { data: rows, error } = await sbc()
+      .from("pb_proposals")
+      .select("id,client_name,owner_email,status,serial_year,serial_no,state,updated_at")
+      .order("updated_at", { ascending: false }).limit(200);
+    if (error) throw error;
+    drafts = (rows || []).map(r => ({
+      id: r.id, name: r.client_name, status: r.status === "issued" ? "generated" : "draft",
+      savedAt: r.updated_at, state: r.state, savedBy: r.owner_email,
+      serial: (r.serial_no ? "CC-" + r.serial_year + "-" + String(r.serial_no).padStart(4, "0") : null)
+    }));
+    const { data: vs } = await sbc()
+      .from("pb_proposal_versions")
+      .select("proposal_id,version_no,serial_label,file_name,generated_at,generated_by")
+      .order("version_no", { ascending: false });
+    versionsFor = {};
+    (vs || []).forEach(v => { (versionsFor[v.proposal_id] = versionsFor[v.proposal_id] || []).push(v); });
+  } catch (e) { console.error(e); }
+}
+
+async function cloudSaveDraft(rec) {
+  try {
+    await sbc().from("pb_proposals").upsert({
+      id: rec.id, client_name: rec.name, owner_email: (me.email || "").toLowerCase(),
+      state: rec.state, updated_at: rec.savedAt
+    }, { onConflict: "id" });
+  } catch (e) { console.error(e); }
+}
+async function cloudDeleteDraft(id) {
+  try { await sbc().from("pb_proposals").delete().eq("id", id); } catch (e) { console.error(e); }
+}
+
+/* ── issuing a version ───────────────────────────────────────────────
+   Called after the file has actually downloaded, so a failed generate
+   never burns a serial. */
+let lastIssued = null;
+async function issueVersion(fileName) {
+  if (!currentDraftId) return null;
+  try {
+    const { data, error } = await sbc().rpc("pb_issue_version", {
+      p_proposal_id: currentDraftId,
+      p_state: JSON.parse(JSON.stringify(builderState())),
+      p_file_name: fileName
+    });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    lastIssued = row;
+    await loadCloudDrafts();
+    render();
+    flash("Saved as " + (row ? row.serial_label : "a new version"));
+    return row;
+  } catch (e) {
+    console.error(e);
+    flash("The file downloaded, but the version could not be recorded: " + e.message);
+    return null;
+  }
+}
+function currentSerialLabel() {
+  const d = drafts.find(x => x.id === currentDraftId);
+  const vs = versionsFor[currentDraftId] || [];
+  if (!d || !d.serial) return "";
+  return d.serial + "-v" + (vs.length ? vs[0].version_no : 1);
+}
+/* what the NEXT download will be called, for the document footer */
+function nextSerialLabel() {
+  const d = drafts.find(x => x.id === currentDraftId);
+  const vs = versionsFor[currentDraftId] || [];
+  if (!d || !d.serial) return "";      /* not allocated until first download */
+  return d.serial + "-v" + ((vs.length ? vs[0].version_no : 0) + 1);
+}
+
+/* ── the switcher, in the dark bar ───────────────────────────────────
+   This is the calendar's brand switcher: same control, same panel, same
+   place. Chirag chose it over a side-panel dropdown so the side panel
+   goes back to doing one job. */
+function proposalSwitcher() {
+  if (mainTab !== "builder") return "";
+  const cur = drafts.find(d => d.id === currentDraftId);
+  const name = client.name || (cur && cur.name) || "Untitled proposal";
+  const serial = currentSerialLabel();
+  let h = `<span class="pbbswrap">
+    <button class="pbbstrig" onclick="switcherOpen=!switcherOpen;render()">
+      <i class="ti ti-file-text" style="font-size:15px"></i>
+      <span class="bnm">${esc(name)}</span>
+      ${serial ? `<span class="pbserial">${esc(serial)}</span>` : `<span class="pbstat">DRAFT</span>`}
+      <i class="ti ti-selector" style="font-size:14px;opacity:.7"></i>
+    </button>`;
+  if (switcherOpen) {
+    h += `<div class="pbbpanel">`;
+    const mine = drafts.slice(0, 12);
+    h += `<div class="pbbphead">${me.role === "admin" ? "All proposals" : "Your proposals"}</div>`;
+    if (!mine.length) h += `<div class="pbempty" style="border:none">Nothing yet. Everything you build is saved as you go.</div>`;
+    for (const d of mine) {
+      const on = d.id === currentDraftId;
+      const vs = versionsFor[d.id] || [];
+      const when = new Date(d.savedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      h += `<div class="pbbrow ${on ? "on" : ""}" onclick="loadDraft('${d.id}')">
+        <i class="ti ${d.status === "generated" ? "ti-file-check" : "ti-file-text"}"></i>
+        <span class="bnm">${esc(d.name || "Untitled proposal")}</span>
+        ${vs.length ? `<span class="pbvcount" title="${vs.length} version${vs.length > 1 ? "s" : ""} sent">v${vs[0].version_no}</span>` : ""}
+        <span class="when">${when}</span></div>`;
+    }
+    if (currentDraftId && (versionsFor[currentDraftId] || []).length) {
+      h += `<div class="pbbpsep"></div><div class="pbbphead">Versions of this proposal</div>`;
+      for (const v of versionsFor[currentDraftId]) {
+        const when = new Date(v.generated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        h += `<div class="pbbrow" style="cursor:default">
+          <i class="ti ti-history"></i><span class="bnm">${esc(v.serial_label)}</span>
+          <span class="when">${when}</span></div>`;
+      }
+    }
+    h += `</div>`;
+  }
+  return h + `</span>`;
+}
+
+/* Download proposal — Chirag chose the label, and chose that it stays
+   clickable: it already refuses without a client or a service, and asks
+   before generating anything half-finished. */
+function navActions() {
+  if (mainTab !== "builder") return "";
+  let h = `<button class="pbnav-btn" onclick="newProposal()"><i class="ti ti-plus" style="font-size:15px"></i> New proposal</button>`;
+  h += `<button class="pbnav-btn red" ${generating ? "disabled" : ""} onclick="canvasGenerate()">${generating ? "Generating…" : "Download proposal"}</button>`;
+  return h;
+}
+
+/* the side panel goes back to one job: the steps */
+function pbSidebar() {
+  let h = `<div class="pbside-scroll"><div class="pblbl">Steps</div>`;
+  for (const [key, num, label] of PB_TABS) {
+    const on = pbTab === key;
+    const st = String(tabStatus(key));
+    const warn = st.includes("⚠") || st === "Not set" || st === "None selected";
+    const done = !warn && st !== "—";
+    h += `<button class="pbstep ${on ? "now" : ""} ${warn ? "warn" : done ? "done" : ""}" onclick="pbTab='${key}';pbEditingId=null;render()">
+      <span class="pbstepno">${num}</span>
+      <span class="pbsteptx"><b>${label}</b><i>${esc(st.replace("⚠ ", ""))}</i></span>
+      ${warn ? `<span class="pbwr">!</span>` : done ? `<span class="pbtick">✓</span>` : ""}
+    </button>`;
+  }
+  h += `</div>`;
+  return h;
 }
 
 </script>
