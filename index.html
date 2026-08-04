@@ -218,6 +218,94 @@ select.pbfld{appearance:none;background:#fff url("data:image/svg+xml;utf8,<svg x
 .pbpv-wrap{padding:18px 20px 40px;background:var(--pb-surface2);border-left:1px solid var(--pb-div);min-width:0}
 .pbpv-wrap.wide .pbpaper{padding:30px 34px 34px}
 
+
+/* ══ ROUND 2 — THE CALENDAR'S VALUES, NOT AN IMITATION OF THEM ═══════
+   Chirag, 2026-08-05: "A new treatment should only be developed when
+   it's absolutely necessary."
+   So every control below is repointed at the Marketing Calendar's own
+   numbers, read out of webapp/site/index.html. Same class names as
+   before, so nothing that uses them had to change — only the values. */
+
+/* buttons: calendar .btn / .btn-p / .btn-s / .btn-g / .btn-d / .btn-sm */
+.pbbtn{height:36px;padding:0 16px;border-radius:var(--pb-r-md);font-size:13px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--pb-div);background:var(--pb-canvas);color:var(--pb-text);
+  font-family:inherit;transition:all 120ms;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pbbtn:hover{background:#eee;border-color:#aaa}
+.pbbtn-p{background:var(--pb-accent);color:#fff;border-color:var(--pb-accent)}
+.pbbtn-p:hover{background:#BF2424;border-color:#BF2424}
+.pbbtn-gh{background:transparent;color:var(--pb-muted);border-color:transparent}
+.pbbtn-gh:hover{background:var(--pb-canvas);color:var(--pb-text);border-color:transparent}
+.pbbtn-d{background:transparent;color:#C62828;border-color:#C62828}
+.pbbtn-d:hover{background:#C62828;color:#fff}
+.pbbtn-sm{height:30px;padding:0 12px;font-size:12px}
+.pbaddrow{border:1.5px dashed var(--pb-div);border-radius:var(--pb-r-md);background:transparent;
+  color:var(--pb-muted);width:100%;height:36px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.pbaddrow:hover{border-color:#aaa;color:var(--pb-text)}
+
+/* fields: calendar .fl / .fi */
+.pbf-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--pb-muted);margin-bottom:4px}
+.pbfld{width:100%;height:38px;padding:0 12px;background:var(--pb-canvas);border:1.5px solid var(--pb-div);
+  border-radius:var(--pb-r-md);font-size:14px;color:var(--pb-text);font-family:inherit;outline:none;transition:all 120ms}
+.pbfld:hover{border-color:#aaa}
+.pbfld:focus{border-color:var(--pb-accent);background:#fff;box-shadow:none}
+textarea.pbfld{height:auto;padding:10px 12px;resize:vertical;line-height:1.5}
+select.pbfld{background:var(--pb-canvas) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23888'/></svg>") no-repeat right 12px center}
+
+/* filter pills: calendar .lm-btn */
+.pbpill,.pbch.sm{height:28px;padding:0 12px;border-radius:999px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--pb-div);background:#fff;color:var(--pb-muted);font-family:inherit;
+  transition:all 120ms;display:inline-flex;align-items:center;gap:4px;letter-spacing:.02em;white-space:nowrap}
+.pbpill:hover,.pbch.sm:hover{border-color:var(--pb-text);color:var(--pb-text)}
+.pbpill.on,.pbch.sm.on{background:var(--pb-text);border-color:var(--pb-text);color:#fff}
+
+/* the calendar's View/Edit segmented control — for Market and Currency,
+   which sit ABOVE the box they filter, not inside it */
+.pbseg2{display:inline-flex;align-items:center;background:#E7E6E1;border-radius:8px;padding:3px;gap:2px;height:36px}
+.pbseg2 button{height:30px;padding:0 14px;border-radius:6px;border:none;background:transparent;
+  display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--pb-muted);
+  cursor:pointer;font-family:inherit}
+.pbseg2 button.on{background:#fff;color:#0D0D0D;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.pbabove{display:flex;align-items:flex-end;gap:18px;margin-bottom:12px;flex-wrap:wrap}
+
+/* the step header cluster: number, title and the two nav buttons as one unit */
+.pbstephead{display:flex;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:16px;
+  border-bottom:1px solid var(--pb-div);flex-wrap:wrap;row-gap:10px}
+.pbstepbadge{width:38px;height:38px;border-radius:10px;background:var(--pb-text);color:#fff;
+  font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;letter-spacing:-.02em}
+.pbstephead h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:120px}
+.pbstepnav{display:flex;gap:6px;flex:none}
+
+/* selected step — declared LAST so it beats .done and .warn whatever the
+   state. This was the black-on-black: .done came after .now and repainted
+   the label dark while the background stayed dark. */
+.pbstep.now,.pbstep.now:hover{background:var(--pb-text)}
+.pbstep.now .pbsteptx b,.pbstep.now .pbsteptx i,.pbstep.now .pbstepno{color:#fff}
+.pbstep.now .pbsteptx i{color:rgba(255,255,255,.65)}
+.pbstep.now .pbtick{color:#8fdc9c}
+.pbstep.now .pbwr{color:#f0c76a}
+
+/* one row shape, used by Content AND Terms — the actions live inside it */
+.pbtrow{display:flex;align-items:center;gap:10px;padding:0 6px 0 12px;min-height:46px;
+  border:1px solid var(--pb-div);border-radius:var(--pb-r-md);margin-bottom:6px;background:#fff;
+  flex-wrap:wrap;row-gap:6px}
+.pbtrow .tn{flex:1;min-width:110px;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbtrow.off{background:var(--pb-canvas);border-style:dashed}
+.pbtrow.off .tn{color:var(--pb-muted);font-weight:500}
+.pbtrow .acts{display:flex;gap:2px;flex:none;margin-left:auto}
+.pbxbtn{width:30px;height:30px;border-radius:6px;border:none;background:transparent;cursor:pointer;
+  color:var(--pb-muted);font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
+.pbxbtn:hover{background:#FEE2E2;color:#C62828}
+.pbcover{font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:999px;
+  background:#EDE9FE;color:#5B21B6;flex:none}
+
+/* each column scrolls on its own, so the steps never slide away with the
+   document — the calendar does the same with .main */
+.pbside{height:calc(100vh - 60px);position:sticky;top:60px;overflow:visible}
+.pbmain{max-height:calc(100vh - 60px);overflow-y:auto;scrollbar-gutter:stable}
+.pbpv-wrap{max-height:calc(100vh - 60px);overflow-y:auto}
+
 </style>
 </head>
 <body>
@@ -21579,29 +21667,7 @@ function renderPaperPreview() {
   }
   // commercial
   h += ph2(editedClauses.length ? "03" : "02", "Commercial");
-  const priced = pricingItems.filter(p => p.amount);
-  if (priced.length) {
-    h += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px"><tr><th style="background:#B12418;color:#fff;text-align:left;padding:6px 9px">Service</th><th style="background:#B12418;color:#fff;text-align:right;padding:6px 9px">Investment</th></tr>`;
-    for (const p of priced) h += `<tr><td style="border:1px solid #e5e5e5;padding:6px 9px">${esc(p.title)}${p.variation?" — "+esc(p.variation):""}</td><td style="border:1px solid #e5e5e5;padding:6px 9px;text-align:right">${esc(p.amount)}</td></tr>`;
-    const tot = pricingTotalGroups();
-    if (tot) {
-      for (const grp of tot) {
-        const lbl = tot.length > 1 ? " — " + (grp.cur !== "INR" ? grp.cur + " " : "") + unitLabel(grp.unit) : "";
-        if (taxRate > 0) { const g = Math.round(grp.sum * taxRate / 100);
-          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">Subtotal${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtMoney(grp.sum, grp.cur)}${grp.unit||""}</td></tr>`;
-          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px">GST (${taxRate}%)${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right">${fmtMoney(g, grp.cur)}${grp.unit||""}</td></tr>`;
-          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total incl. GST${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${fmtMoney(grp.sum+g, grp.cur)}${grp.unit||""}</td></tr>`;
-        } else {
-          h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total${lbl}</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${fmtMoney(grp.sum, grp.cur)}${grp.unit||""}</td></tr>`;
-        }
-      }
-    } else {
-      h += `<tr><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;font-weight:700">Total</td><td style="border:1px solid #e5e5e5;background:#f5f5f5;padding:6px 9px;text-align:right;font-weight:700">${(priced.length===1?esc(priced[0].amount):"As above")+(taxRate>0?" + GST ("+taxRate+"%)":"")}</td></tr>`;
-    }
-    h += `</table>`;
-  } else {
-    h += `<div style="color:#ccc;font-size:12px;font-style:italic">Amounts appear here once filled in 04 Pricing.</div>`;
-  }
+  h += commercialRowsHtml();
   for (const p of editedPayment) { h += `<div style="font-size:13px;font-weight:700;margin:10px 0 4px">${esc(p.title)}</div>` + pv(p.editedContent); }
   if (!editedPayment.length) h += `<div style="color:#c62828;font-size:11.5px;margin-top:6px">⚠ No payment terms included.</div>`;
   // acceptance
@@ -21892,32 +21958,12 @@ async function handleGenerate() {
       const rowTitle = pi.title + (pi.variation ? " — " + pi.variation : "");
       pricingRows.push(new TableRow({ children: [
         new TableCell({ borders: bdrs, width: { size: w1, type: WidthType.DXA }, margins: cm, children: [new Paragraph({ children: [new TextRun({ text: rowTitle, font: "Arial", size: 22 })] })] }),
-        new TableCell({ borders: bdrs, width: { size: w2, type: WidthType.DXA }, margins: cm, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: pi.amount, font: "Arial", size: 22 })] })] }),
+        new TableCell({ borders: bdrs, width: { size: w2, type: WidthType.DXA }, margins: cm, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: amountWithGst(pi), font: "Arial", size: 22 })] })] }),
       ] }));
     }
-    // Subtotal / GST / Total rows — computed when all amounts are parseable
-    const tot = pricingTotalGroups();
-    const totRow = (label, value, big) => new TableRow({ children: [
-      new TableCell({ borders: bdrs, width: { size: w1, type: WidthType.DXA }, shading: { fill: LIGHT, type: ShadingType.CLEAR }, margins: cm, children: [new Paragraph({ children: [new TextRun({ text: label, font: "Arial", size: big?24:22, bold: big })] })] }),
-      new TableCell({ borders: bdrs, width: { size: w2, type: WidthType.DXA }, shading: { fill: LIGHT, type: ShadingType.CLEAR }, margins: cm, children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: value, font: "Arial", size: big?24:22, bold: big })] })] }),
-    ] });
-    if (tot) {
-      for (const grp of tot) {
-        const lbl = tot.length > 1 ? " — " + (grp.cur !== "INR" ? grp.cur + " " : "") + unitLabel(grp.unit) : "";
-        if (taxRate > 0) {
-          const tax = Math.round(grp.sum * taxRate / 100);
-          pricingRows.push(totRow("Subtotal" + lbl, fmtMoney(grp.sum, grp.cur) + (grp.unit||""), false));
-          pricingRows.push(totRow("GST (" + taxRate + "%)" + lbl, fmtMoney(tax, grp.cur) + (grp.unit||""), false));
-          pricingRows.push(totRow("Total incl. GST" + lbl, fmtMoney(grp.sum + tax, grp.cur) + (grp.unit||""), true));
-        } else {
-          pricingRows.push(totRow("Total" + lbl, fmtMoney(grp.sum, grp.cur) + (grp.unit||""), true));
-        }
-      }
-    } else {
-      const suffix = taxRate > 0 ? " + GST (" + taxRate + "%)" : "";
-      const totalAmt = pricedItems.length === 1 ? pricedItems[0].amount + suffix : "As above" + suffix;
-      pricingRows.push(totRow("Total", totalAmt, true));
-    }
+    /* No Subtotal, GST or Total row — Chirag, 2026-08-05. Each line
+       already reads "… + GST", so a separate calculation would be a
+       second place for the same number to be wrong. */
     contentChildren.push(new Table({ width: { size: CW, type: WidthType.DXA }, columnWidths: [w1, w2], rows: pricingRows }));
     contentChildren.push(sp(200));
 
@@ -22799,7 +22845,7 @@ function dbSidebar() {
     h += `<div class="pblbl">Filter</div><div class="pbpills">`;
     for (const cat of cats) {
       const n = data.services.filter(s => s.category === cat).length;
-      h += `<button class="pbpill ${catFilter === cat ? "on" : ""}" onclick="catFilter=${JSON.stringify(cat)};render()">${esc(cat)}</button>`;
+      h += `<button class="pbpill ${catFilter === cat ? "on" : ""}" data-cat="${esc(cat)}" onclick="setDbCat(this)">${esc(cat)}</button>`;
       void n;
     }
     h += `<button class="pbpill all ${catFilter === "All" ? "on" : ""}" onclick="catFilter='All';render()">All <i>${c.services}</i></button>`;
@@ -23484,6 +23530,318 @@ function panelReview() {
   h += `<button class="pbbigbtn" ${generating ? "disabled" : ""} onclick="canvasGenerate()">${generating ? "Generating…" : "Generate Word Proposal ↓"}</button>`;
   h += `<div class="pbhint" style="text-align:center;margin-top:9px">${bad ? bad + " thing" + (bad > 1 ? "s are" : " is") + " missing. You'll be asked to confirm before it downloads." : "The proposal is also saved to your drafts."}</div>`;
   return h;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   ROUND 2 — the fixes Chirag listed on 2026-08-05.
+   Appended, so each function below replaces the one above it.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Build Proposal is where the work happens, so that is what opens. */
+mainTab = (me && me.role === "admin") ? "builder" : "builder";
+
+/* ── THE PILL BUG ────────────────────────────────────────────────────
+   The category name was written into the click handler as JSON, which
+   wraps it in double quotes — inside a double-quoted HTML attribute.
+   The attribute ended at the first quote and the handler was gone, so
+   the pills rendered and did nothing. Both filters had it.
+   Values now travel in a data attribute, where quoting is the browser's
+   problem rather than mine. */
+function setDbCat(el) { catFilter = el.dataset.cat; render(); }
+function setPbCat(el) { pbCat = el.dataset.cat; render(); }
+
+/* ── MARKET AND CURRENCY SIT ABOVE THE BOX THEY FILTER ───────────── */
+function segControl(options, current, fnName) {
+  return `<span class="pbseg2">` + options.map(([v, l]) =>
+    `<button class="${current === v ? "on" : ""}" onclick="${fnName}('${v}')">${l}</button>`).join("") + `</span>`;
+}
+
+/* ── GST ─────────────────────────────────────────────────────────────
+   Chirag: "GST should not be calculated and shown as a separate column.
+   Instead it should simply show in each pricing row next to the price
+   as '+ GST'. No separate number."  And: no GST at all on international
+   proposals, because there isn't any.
+   So the amount string the Word file prints carries the suffix, and the
+   Subtotal / GST / Total rows are gone from both the preview and the
+   document. */
+function gstApplies() { return pbMarket !== "INTL" && taxRate > 0; }
+function amountWithGst(item) {
+  const a = (item && item.amount) ? String(item.amount) : "";
+  if (!a) return a;
+  return gstApplies() ? a + " + GST" : a;
+}
+function setMarket(mkt) {
+  pbMarket = mkt;
+  taxRate = mkt === "INTL" ? 0 : (taxRate || 18);
+  if (mkt === "INTL") taxRate = 0;
+  autoSaveDraft(); render();
+}
+function setTax(rate) { taxRate = parseInt(rate, 10) || 0; autoSaveDraft(); render(); }
+
+/* the status line under Pricing in the side panel: no totals to report
+   any more, so it reports what is missing instead */
+function tabStatus(key) {
+  switch (key) {
+    case "client":   return client.name ? client.name : "Not set";
+    case "services": return editedSections.length ? editedSections.length + " selected" : "None selected";
+    case "content":  { const n = editedSections.reduce((a,g)=>a+g.sections.length,0); return n ? n + " sections" : "—"; }
+    case "pricing":  {
+      if (!pricingItems.length) return "—";
+      const miss = pricingItems.filter(p => !p.amount || !p.amount.trim()).length;
+      if (miss) return "⚠ " + miss + " amount" + (miss > 1 ? "s" : "") + " missing";
+      return pricingItems.length + " line" + (pricingItems.length > 1 ? "s" : "") + (gstApplies() ? " · + GST" : "");
+    }
+    case "terms":    return editedClauses.length + " T&C · " + (editedPayment.length ? "payment ✓" : "⚠ no payment");
+    case "review":   { const r = readinessList(); return r.filter(c => c.ok).length + "/" + r.length + " ready"; }
+  }
+  return "";
+}
+
+
+/* ── THE STEP HEADER, AS ONE CLUSTER ─────────────────────────────────
+   Chirag: "The step no., step title and next button need to be neatly
+   designed as a bunch." And the explanatory line under each title is
+   gone — it was telling you what the screen already shows. */
+function panelHead(kicker, title, sub, actions) {
+  const num = (String(kicker).match(/(\d+)/) || [, ""])[1];
+  return `<div class="pbstephead">
+    ${num ? `<span class="pbstepbadge">${num}</span>` : ""}
+    <h2>${title}</h2>
+    <span class="pbstepnav">${actions || ""}</span>
+  </div>`;
+}
+function backBtn(key, label) { return `<button class="pbbtn pbbtn-sm" onclick="pbTab='${key}';pbEditingId=null;render()">← ${label}</button>`; }
+function nextBtn(key, label) { return `<button class="pbbtn pbbtn-sm pbbtn-p" onclick="pbTab='${key}';pbEditingId=null;render()">${label || "Next"} →</button>`; }
+
+/* ── 02 SERVICES ─────────────────────────────────────────────────── */
+function panelServices() {
+  let h = panelHead("Step 02", "Services", null,
+    backBtn("client", "Client") + nextBtn("content", "Next: Content"));
+
+  const marketSvcs = data.services.filter(sv => marketAllows(sv) && (me.role === "admin" || !svcThin(sv)));
+  const cats = [...new Set(marketSvcs.map(x => x.category).filter(Boolean))].sort();
+  if (pbCat !== "All" && !cats.includes(pbCat)) pbCat = "All";
+
+  /* the market toggle defines the box below it, so it sits above it */
+  h += `<div class="pbabove">
+    <div><label class="pbf-lbl">Market</label>
+      ${segControl([["IND", "India"], ["INTL", "International"]], pbMarket, "setMarket")}</div>
+  </div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Services</h3>
+    <span class="cnt">${editedSections.length} of ${marketSvcs.length} selected</span>
+    <span class="sp">
+      ${cats.map(c => `<button class="pbpill ${pbCat === c ? "on" : ""}" data-cat="${esc(c)}" onclick="setPbCat(this)">${esc(c)}</button>`).join("")}
+      <button class="pbpill ${pbCat === "All" ? "on" : ""}" data-cat="All" onclick="setPbCat(this)">All <span style="opacity:.6">${marketSvcs.length}</span></button>
+    </span></div><div class="pbcardbd">`;
+
+  const visible = marketSvcs.filter(sv => pbCat === "All" || sv.category === pbCat);
+  const groups = [];
+  const rets = visible.filter(sv => sv.type === "Retainer");
+  if (rets.length) groups.push(["Retainers", rets]);
+  for (const c of [...new Set(visible.filter(sv => sv.type !== "Retainer").map(sv => sv.category || "Other"))]) {
+    groups.push([c + " · Ad hoc", visible.filter(sv => sv.type !== "Retainer" && (sv.category || "Other") === c)]);
+  }
+  if (!visible.length) h += `<div class="pbempty">No services for this market or filter yet.</div>`;
+
+  for (const [label, list] of groups) {
+    h += `<div class="pblbl" style="margin:12px 0 7px">${esc(label)}</div>`;
+    for (const sv of list) {
+      const on = svcInProposal(sv.id);
+      if (svcThin(sv) && me.role === "admin") {
+        h += `<div class="pbtrow off"><span class="tn">${esc(sv.title)}</span>
+          <span style="font-size:11px;color:var(--pb-warn-ink)">⚠ content not ready — hidden from members</span></div>`;
+        continue;
+      }
+      const gi = editedSections.findIndex(g => g.svcId === sv.id);
+      const g = editedSections[gi];
+      const hasR2 = (sv.sections || []).some(x => x.route === "2");
+      const routeSecs = (sv.sections || []).filter(x => (x.route === ((g && g.route) || "1") || x.route === "both") && x.content);
+      h += `<div class="pbsvc ${on ? "on" : ""}">
+        <div class="pbsvchd" onclick="canvasToggleSvc('${sv.id}')">
+          <span class="pbcbx ${on ? "on" : ""}">${on ? "✓" : ""}</span>
+          <span class="pbsvcnm">${esc(sv.title)}</span>
+          <span class="pbsvcmeta">${on && g ? g.sections.length + " of " + routeSecs.length + " sections" : svcSectionCount(sv) + " sections"}</span>
+          ${on && hasR2 ? `<span onclick="event.stopPropagation()">${segControl([["1", "Detailed"], ["2", "Simple"]], (g && g.route) || "1", "canvasSetRoute.bind(null,'" + sv.id + "')")}</span>` : ""}
+        </div>`;
+      if (on && g) {
+        h += `<div class="pbsvcbd">`;
+        for (const sec of routeSecs) {
+          const inc = g.sections.some(x => x.id === sec.id);
+          h += `<div class="pbsecline ${sec.addon ? "addon" : ""}" onclick="canvasToggleSection('${sv.id}','${sec.id}')" style="cursor:pointer">
+            <span class="pbcbx ${inc ? "on" : ""}" style="width:15px;height:15px;font-size:9px">${inc ? "✓" : ""}</span>
+            <span style="${inc ? "" : "color:var(--pb-subtle);"}">${esc(sec.title)}</span>
+            ${sec.addon ? `<span class="pbbadge">ADD ON</span>` : ""}</div>`;
+        }
+        if (sv.sla) {
+          h += `<div class="pbsecline" onclick="canvasToggleSla(${gi})" style="cursor:pointer;border-top:1px dashed var(--pb-div);margin-top:5px;padding-top:8px">
+            <span class="pbcbx ${g.sla ? "on" : ""}" style="width:15px;height:15px;font-size:9px">${g.sla ? "✓" : ""}</span>
+            <span>Include Service Level Agreement</span></div>`;
+        }
+        h += `</div>`;
+      }
+      h += `</div>`;
+    }
+  }
+  h += `</div></div>`;
+  return h;
+}
+
+/* ── 03 CONTENT ──────────────────────────────────────────────────── */
+function panelContent() {
+  let h = panelHead("Step 03", "Content", null,
+    backBtn("services", "Services") + nextBtn("pricing", "Next: Pricing"));
+  if (!editedSections.length) return h + `<div class="pbempty">No services selected yet — go to <b>02 Services</b> first.</div>`;
+  editedSections.forEach((g, gi) => {
+    const dropped = droppedSections(gi);
+    h += `<div class="pbcard"><div class="pbcardhd"><h3>${esc(g.svcTitle)}</h3><span class="cnt">${g.sections.length} sections</span></div><div class="pbcardbd">`;
+    g.sections.forEach((sec, si) => {
+      const key = "sec-" + gi + "-" + si;
+      const ed = pbEditingId === key;
+      h += `<div class="pbtrow"${ed ? ` style="border-color:var(--pb-accent)"` : ""}>
+        <span class="tn">${esc(sec.editedTitle || sec.title)}</span>
+        ${sec.addon ? `<span class="pbbadge">ADD ON</span>` : ""}
+        <span class="acts">
+          <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'" + key + "'"};render()">${ed ? "Close" : "Edit"}</button>
+          <button class="pbxbtn" title="Remove from this proposal" onclick="deleteEditedSection(${gi},${si})">✕</button>
+        </span></div>`;
+      if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edsec:" + gi + ":" + si, sec.editedContent)}</div>`;
+    });
+    for (const d of dropped) {
+      h += `<div class="pbtrow off"><span class="tn">${esc(d.title)}</span>
+        ${d.addon ? `<span class="pbbadge">ADD ON</span>` : ""}
+        <span class="acts"><button class="pbbtn pbbtn-sm" onclick="restoreSection(${gi},'${d.id}')">Include</button></span></div>`;
+    }
+    if (g.sla) {
+      const slaKey = "sla-" + gi;
+      const ed = pbEditingId === slaKey;
+      h += `<div class="pbtrow"><span class="tn">Service Level Agreement</span>
+        <span class="acts"><button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'" + slaKey + "'"};render()">${ed ? "Close" : "Edit"}</button></span></div>`;
+      if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edsla:" + gi, g.sla)}</div>`;
+    }
+    h += `</div></div>`;
+  });
+  return h;
+}
+
+/* ── 04 PRICING ──────────────────────────────────────────────────── */
+function panelPricing() {
+  migratePricingItems();
+  let h = panelHead("Step 04", "Pricing", null,
+    backBtn("content", "Content") + nextBtn("terms", "Next: Terms"));
+
+  /* currency and tax define the box below them, so they sit above it */
+  h += `<div class="pbabove">
+    <div><label class="pbf-lbl">Currency</label>
+      ${segControl(PB_CURRENCIES, pbCurrency, "setCurrency")}</div>`;
+  if (pbMarket !== "INTL") {
+    h += `<div><label class="pbf-lbl">Tax</label>
+      ${segControl([["18", "GST 18%"], ["5", "GST 5%"], ["0", "No GST"]], String(taxRate), "setTax")}</div>`;
+  } else {
+    h += `<div><label class="pbf-lbl">Tax</label>
+      <div style="height:36px;display:flex;align-items:center;font-size:12.5px;color:var(--pb-subtle)">No GST on international proposals</div></div>`;
+  }
+  h += `</div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Lines</h3><span class="cnt">${pricingItems.length}</span></div><div class="pbcardbd">`;
+  if (!pricingItems.length) h += `<div class="pbempty">Rows appear when you add services — or add one manually below.</div>`;
+  else h += `<div class="pbpr"><span class="pbprhd">Line</span><span class="pbprhd">Amount</span><span class="pbprhd">Billed</span><span></span></div>`;
+  pricingItems.forEach((item, i) => {
+    const missing = !item.num;
+    h += `<div class="pbpr">
+      <input class="pbfld priceTitle" value="${esc(item.title)}" placeholder="e.g. One Time Setup" oninput="pricingItems[${i}].title=this.value" onchange="autoSaveDraft();render()"/>
+      <input class="pbfld" inputmode="numeric" value="${esc(item.num || "")}" placeholder="—" style="${missing ? "border-color:#e0a53a;background:#FFFBF2" : ""}" onchange="setPriceNum(${i},this.value)"/>
+      <select class="pbfld" onchange="setPriceUnit(${i},this.value)">
+        ${PB_UNITS.map(([k, l]) => `<option value="${k}"${(item.unit || "") === k ? " selected" : ""}>${l}</option>`).join("")}
+      </select>
+      <button class="pbxbtn" title="Delete this line" onclick="deletePricingLine(${i})">✕</button></div>`;
+    const shown = amountWithGst(item);
+    if (shown) h += `<div class="pbhint" style="margin:-3px 0 9px">prints as “${esc(shown)}”</div>`;
+    if (item.range && me.role === "admin") h += `<div class="pbhint" style="margin:-3px 0 9px;color:var(--pb-warn-ink)">Rate card guideline: ${esc(item.range)}</div>`;
+  });
+  h += `<button class="pbaddrow" onclick="addPricingLine()">＋ Add a line — one-time setup, onboarding, anything extra</button>`;
+  const missing = pricingItems.filter(p => !p.amount || !p.amount.trim()).length;
+  if (missing) h += `<div class="pbhint" style="margin-top:10px;color:var(--pb-warn-ink)">${missing} line${missing > 1 ? "s" : ""} with no amount — left out of the document</div>`;
+  h += `</div></div>`;
+  return h;
+}
+
+/* ── 05 TERMS & PAYMENT ──────────────────────────────────────────────
+   The reorder arrows are gone: they ordered a list you never see. What
+   they were secretly deciding — which payment term becomes "Payment
+   Model" on the cover — is now a thing you pick. */
+function setCoverTerm(id) {
+  const i = editedPayment.findIndex(p => p.id === id);
+  if (i > 0) { const [p] = editedPayment.splice(i, 1); editedPayment.unshift(p); }
+  autoSaveDraft(); render();
+}
+function panelTerms() {
+  let h = panelHead("Step 05", "Terms &amp; Payment", null,
+    backBtn("pricing", "Pricing") + nextBtn("review", "Next: Review"));
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Terms &amp; conditions</h3>
+    <span class="cnt">${editedClauses.length} of ${data.commonSections.length} included</span></div><div class="pbcardbd">`;
+  editedClauses.forEach((c, idx) => {
+    const ed = pbEditingId === "cl-" + idx;
+    h += `<div class="pbtrow"${ed ? ` style="border-color:var(--pb-accent)"` : ""}>
+      <span class="tn">${esc(c.title)}</span>
+      <span class="acts">
+        <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'cl-" + idx + "'"};render()">${ed ? "Close" : "Edit"}</button>
+        <button class="pbxbtn" title="Remove from this proposal" onclick="canvasToggleClause('${c.id}')">✕</button>
+      </span></div>`;
+    if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edcl:" + idx, c.editedContent)}</div>`;
+  });
+  for (const c of data.commonSections) {
+    if (editedClauses.some(x => x.id === c.id)) continue;
+    h += `<div class="pbtrow off"><span class="tn">${esc(c.title)}</span>
+      <span class="acts"><button class="pbbtn pbbtn-sm" onclick="canvasToggleClause('${c.id}')">Include</button></span></div>`;
+  }
+  h += `</div></div>`;
+
+  h += `<div class="pbcard"><div class="pbcardhd"><h3>Payment terms</h3>
+    <span class="cnt"${editedPayment.length ? "" : ` style="color:var(--pb-warn-ink);font-weight:700"`}>${editedPayment.length ? editedPayment.length + " included" : "none included"}</span></div><div class="pbcardbd">`;
+  if (!editedPayment.length) {
+    h += `<div style="background:var(--pb-note-bg);border-left:3px solid #e0b64a;padding:10px 12px;font-size:12px;color:var(--pb-note-ink);border-radius:0 6px 6px 0;margin-bottom:12px">
+      <b>Nothing is included.</b> This proposal will go out with no payment terms, and the cover's Payment Model will read TBD.</div>`;
+  }
+  editedPayment.forEach((p, idx) => {
+    const ed = pbEditingId === "pt-" + idx;
+    h += `<div class="pbtrow"${ed ? ` style="border-color:var(--pb-accent)"` : ""}>
+      <button title="Show this one on the cover" onclick="setCoverTerm('${p.id}')"
+        style="border:none;background:none;cursor:pointer;font-size:15px;color:${idx === 0 ? "var(--pb-accent)" : "var(--pb-subtle)"};padding:0">${idx === 0 ? "◉" : "○"}</button>
+      <span class="tn">${esc(p.title)}</span>
+      ${idx === 0 ? `<span class="pbcover">ON COVER</span>` : ""}
+      <span class="acts">
+        <button class="pbbtn pbbtn-sm pbbtn-gh" onclick="pbEditingId=${ed ? "null" : "'pt-" + idx + "'"};render()">${ed ? "Close" : "Edit"}</button>
+        <button class="pbxbtn" title="Remove from this proposal" onclick="canvasTogglePayment('${p.id}')">✕</button>
+      </span></div>`;
+    if (ed) h += `<div style="margin:-2px 0 10px">${richEditorHtml("edpt:" + idx, p.editedContent)}</div>`;
+  });
+  for (const p of data.paymentTerms) {
+    if (editedPayment.some(x => x.id === p.id)) continue;
+    h += `<div class="pbtrow off"><span style="width:15px"></span><span class="tn">${esc(p.title)}</span>
+      <span class="acts"><button class="pbbtn pbbtn-sm" onclick="canvasTogglePayment('${p.id}')">Include</button></span></div>`;
+  }
+  h += `</div></div>`;
+  return h;
+}
+
+
+/* ── THE COMMERCIAL TABLE, ON SCREEN ─────────────────────────────────
+   No Subtotal, no GST row, no Total. Each line carries "+ GST" when the
+   market is India. The document below does exactly the same. */
+function commercialRowsHtml() {
+  const priced = pricingItems.filter(p => p.amount);
+  if (!priced.length) return `<div style="color:#ccc;font-size:12px;font-style:italic">Amounts appear here once filled in 04 Pricing.</div>`;
+  let h = `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
+    <tr><th style="background:var(--pb-accent);color:#fff;text-align:left;padding:6px 9px">Service</th>
+        <th style="background:var(--pb-accent);color:#fff;text-align:right;padding:6px 9px">Investment</th></tr>`;
+  for (const p of priced) {
+    h += `<tr><td style="border:1px solid var(--pb-div);padding:6px 9px">${esc(p.title)}${p.variation ? " — " + esc(p.variation) : ""}</td>
+      <td style="border:1px solid var(--pb-div);padding:6px 9px;text-align:right">${esc(amountWithGst(p))}</td></tr>`;
+  }
+  return h + `</table>`;
 }
 
 </script>
