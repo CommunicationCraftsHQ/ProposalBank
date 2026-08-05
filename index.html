@@ -24326,6 +24326,111 @@ function renderClauseDetail(selKey, list, updateFnName, deleteFnName) {
 }
 
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   ACCESS STAGE 5c — the Proposal Bank reads the consolidated model.
+   Appended, not spliced: these three re-declare the versions above.
+
+   WHAT THIS IS CAREFUL ABOUT
+
+   In this app a falsy role means "logged out" — `if (!me.role) show the
+   login gate`. So a lookup that returns nothing for a real user drops
+   them on a login screen while their session is perfectly good. It looks
+   exactly like a lockout and it is the sharpest failure mode here.
+
+   Therefore: user_tool_roles decides, pb_users still answers when it has
+   nothing, and the sign-out branch fires ONLY when both are silent. An
+   ERROR from either is never treated as "no access" — it falls through
+   to the other one. Stage 5e removes the fallback, after a real
+   non-admin has signed in and proved the new path.
+
+   The other trap: this app is email-keyed end to end and never reads the
+   auth uid. user_tool_roles is keyed by user_id. So afterLogin now
+   carries the SESSION, not just an email string — and doLogin, which
+   previously had no session in hand at all, fetches one.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* the consolidated model, by user id, scoped to THIS tool.
+   The tool filter is in the query, not applied afterwards: someone with
+   a calendar row and no Proposal Bank row must resolve to nothing. */
+async function pbRoleFromTools(userId) {
+  if (!userId) return { role: null, errored: false };
+  try {
+    const { data, error } = await sbc()
+      .from("user_tool_roles").select("role")
+      .eq("user_id", userId).eq("tool", "proposal_bank").limit(1);
+    if (error) return { role: null, errored: true };
+    return { role: (data && data.length) ? data[0].role : null, errored: false };
+  } catch (e) { return { role: null, errored: true }; }
+}
+/* the old table, by email, case-insensitive as it always was */
+async function pbRoleFromLegacy(email) {
+  try {
+    const { data, error } = await sbc()
+      .from("pb_users").select("role").ilike("email", email);
+    if (error) return { role: null, errored: true };
+    return { role: (data && data.length) ? data[0].role : null, errored: false };
+  } catch (e) { return { role: null, errored: true }; }
+}
+
+async function afterLogin(email, fresh, session) {
+  me.email = email;
+  const uid = session && session.user ? session.user.id : null;
+  const a = await pbRoleFromTools(uid);
+  const b = a.role ? { role: null, errored: false } : await pbRoleFromLegacy(email);
+  const role = a.role || b.role;
+
+  if (!role) {
+    /* Only refuse when BOTH lookups came back empty AND neither failed.
+       If a lookup errored we cannot tell "no access" from "could not
+       ask", and signing somebody out on a failed request is how a
+       network blip becomes a lockout. */
+    if (a.errored || b.errored) {
+      authMsg = "Could not check your access just now. Try again in a moment.";
+      me = { email: null, role: null }; render(); return;
+    }
+    authMsg = "This account doesn't have Proposal Bank access yet. Ask Chirag to add you.";
+    try { await sbc().auth.signOut(); } catch (e) {}
+    me = { email: null, role: null }; render(); return;
+  }
+
+  me.role = role;
+  if (me.role !== "admin") mainTab = "builder";
+  await loadCloud();
+  await loadCloudDrafts();
+  if (fresh) logEvent("login", {});
+  authMsg = "";
+  startPolling();
+  render();
+}
+
+async function initApp() {
+  try {
+    const { data: { session } } = await sbc().auth.getSession();
+    if (session && session.user && session.user.email) {
+      await afterLogin(session.user.email, false, session); return;
+    }
+  } catch (e) { console.error(e); }
+  render();
+}
+
+async function doLogin() {
+  const emailEl = document.getElementById("loginEmail"), pwEl = document.getElementById("loginPw");
+  const email = emailEl ? emailEl.value.trim() : "", pw = pwEl ? pwEl.value : "";
+  if (!email || !pw) { authMsg = "Enter your email and password."; render(); return; }
+  authMsg = "Signing in…"; render();
+  try {
+    const { data, error } = await sbc().auth.signInWithPassword({ email, password: pw });
+    if (error) { authMsg = "Sign-in failed: " + error.message; render(); return; }
+    /* signInWithPassword returns the session — the old code threw it away
+       and passed the typed string through, which is why there was never
+       a user id to look up. */
+    let session = data && data.session;
+    if (!session) { try { session = (await sbc().auth.getSession()).data.session; } catch (e) {} }
+    await afterLogin(email, true, session);
+  } catch (e) { authMsg = "Sign-in failed: " + e.message; render(); }
+}
+
 </script>
 </body>
 </html>
